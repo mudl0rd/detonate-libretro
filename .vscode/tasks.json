@@ -1,0 +1,81 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"windows": {
+				"command": "C:\\msys64\\usr\\bin\\bash.exe",
+				"args": ["-lc", "rm -r builddir &&([ -f builddir/build.ninja ] || CC=gcc CXX=g++ meson setup builddir && meson builddir && cd builddir && meson install) && ninja -C builddir | cat"]
+			},
+			"linux": {
+				"args": ["-lc", "cd \"\"${workspaceRoot}\"\" && rm -r builddir && ([ -f builddir/build.ninja ] || meson builddir) && ninja -C builddir && cd builddir && meson install && $@"],
+				"command": "/bin/bash"
+			},
+			"options": {
+				"env": {
+					"LANG": "C.UTF-8",
+					"PYTHONUNBUFFERD": "1",
+					"MSYSTEM": "MINGW64",
+					"CHERE_INVOKING": "1"
+				}
+			},
+			"label": "build",
+			"problemMatcher": {
+				"owner": "cpp",
+				"fileLocation": [
+					"relative",
+					"${workspaceRoot}/builddir"
+				],
+				"pattern": {
+					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error|fatal error):\\s+(.*)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"severity": 4,
+					"message": 5
+				}
+			},
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"windows": {
+				"command": "C:\\msys64\\usr\\bin\\bash.exe",
+				"args": ["-lc", "rm -r builddir &&([ -f builddir/build.ninja ] || CC=gcc CXX=g++ windowing_type=sdlguionly meson setup builddir && meson builddir && cd builddir && meson install) && ninja -C builddir | cat"]
+			},
+			"linux": {
+				"args": ["-lc", "cd \"\"${workspaceRoot}\"\" && rm -r builddir && ([ -f builddir/build.ninja ] || meson builddir) && ninja -C builddir && cd builddir && meson install && $@"],
+				"command": "/bin/bash"
+			},
+			"options": {
+				"env": {
+					"LANG": "C.UTF-8",
+					"PYTHONUNBUFFERD": "1",
+					"MSYSTEM": "MINGW64",
+					"CHERE_INVOKING": "1"
+				}
+			},
+			"label": "builddbg",
+			"problemMatcher": {
+				"owner": "cpp",
+				"fileLocation": [
+					"relative",
+					"${workspaceRoot}/builddir"
+				],
+				"pattern": {
+					"regexp": "^(.*):(\\d+):(\\d+):\\s+(warning|error|fatal error):\\s+(.*)$",
+					"file": 1,
+					"line": 2,
+					"column": 3,
+					"severity": 4,
+					"message": 5
+				}
+			},
+			"group": {
+				"kind": "none",
+				"isDefault": true
+			}
+		},
+	]
+}

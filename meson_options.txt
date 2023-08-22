@@ -1,0 +1,18 @@
+# General options
+option('windowing_type',
+    type: 'combo',
+    value : 'sdlguionly',
+    choices: ['win32guionly', 'sdlguionly','clionly'],
+    description: 'Set the UI type')
+option('test_combo',
+    type: 'combo',
+    choices : ['none', 'libfuzzer', 'oss-fuzz'],
+    value: 'none',
+    description: 'Select the text')
+option('test_string',
+    type: 'string',
+    description: 'test string')
+option('test_int',
+    type: 'integer',
+    value: '0',
+    description: 'Select the integer')
