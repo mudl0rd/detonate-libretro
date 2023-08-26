@@ -29,7 +29,8 @@ inc = [
     '../../common/mudutils',
     '../../common/formats',
     '../../common/deps/stb',
-    '../../common/deps/ibxm'
+    '../../common/deps/ibxm',
+    'src'
   )
 ]
 if host_machine.system() == 'linux'
