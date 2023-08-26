@@ -1,30 +1,31 @@
-#include "../audiodecode.h"
-#define DR_MP3_IMPLEMENTATION
-#include <dr/dr_mp3.h>
+#define DR_WAV_IMPLEMENTATION
+#include <dr/dr_wav.h>
+#include "audiodecode.h"
 #include <stdint.h>
 #include <stdbool.h>
 
 #define NUM_FRAMES 1024
 
-class auddecode_mp3 : public auddecode
+class auddecode_wav : public auddecode
 {
 private:
     bool isplaying2;
-    drmp3       stream;
+    drwav       stream;
     bool        repeat;
+    bool isplaying;
 public:
-	~auddecode_mp3() {
+	~auddecode_wav() {
+      
     }
 
-    auddecode_mp3()
+    auddecode_wav()
     {
         isplaying2 = false;
     }
 
 	bool open(const char* filename ,float * samplerate, bool loop)
     {
-
-        if (!drmp3_init_file(&stream, filename, NULL)) {
+        if (!drwav_init_file(&stream,filename,NULL)) {
         return false;
         }
         *samplerate = stream.sampleRate;
@@ -36,30 +37,32 @@ public:
 
 	virtual void seek(unsigned ms)
     {
-        drmp3_uint64 index = ms;
+        drwav_uint64 index = ms;
         index *= stream.sampleRate;
         index /= 1000;
-        drmp3_seek_to_pcm_frame(&stream, index);
+        drwav_seek_to_pcm_frame(&stream, index);
     }
 
     void stop()
     {
         if(isplaying2)
         {
-        isplaying2=false;
-        if(&stream)
-        drmp3_uninit(&stream);
-       
+         isplaying2=false;
+        drwav_free(&stream,NULL);
         }
     }
 
-    bool isplaying()
+    bool is_playing()
     {
         return isplaying2;
     }
 
     unsigned song_duration(){
-        return 0;
+        drwav_uint64 index;
+        drwav_get_length_in_pcm_frames(&stream,&index);
+        index *= stream.channels;
+        index /= stream.sampleRate;
+        return index;
     }
 
     const char* song_title()
@@ -69,7 +72,7 @@ public:
     }
 
     const char* file_types(){
-         return "mp3";
+         return "wav";
     }
 
 	void mix( float *& buffer_samps, unsigned & count)
@@ -78,12 +81,12 @@ public:
         unsigned temp_samples=0;
          if(isplaying2){
      again:
-      temp_samples = (unsigned)drmp3_read_pcm_frames_f32(&stream,NUM_FRAMES, temp_buffer);
+      temp_samples = (unsigned)drwav_read_pcm_frames_f32(&stream,NUM_FRAMES, temp_buffer);
       if (temp_samples == 0)
       {
          if (repeat)
          {
-            drmp3_seek_to_pcm_frame(&stream,0);
+            drwav_seek_to_pcm_frame(&stream,0);
             goto again;
          }
          isplaying2=false;
@@ -95,6 +98,6 @@ public:
     }
 };
 
-auddecode *create_mp3(){
-    return new auddecode_mp3;
+auddecode *create_wav(){
+    return new auddecode_wav;
 }

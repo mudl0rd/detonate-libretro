@@ -58,13 +58,15 @@ public:
         }
     }
 
-    bool isplaying()
+    bool is_playing()
     {
         return isplaying2;
     }
 
     unsigned song_duration(){
-        return 0;
+        drflac_uint64 index=stream->totalPCMFrameCount*stream->channels;
+        index /= stream->sampleRate;
+        return index;
     }
 
     const char* song_title()

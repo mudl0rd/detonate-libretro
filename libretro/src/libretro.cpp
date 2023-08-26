@@ -9,7 +9,7 @@
 #include "libretro.h"
 #include "imgui_libretro.h"
 #include "glsym/glsym.h"
-#include "mudcode/audiodecode.h"
+#include "audiodecode.h"
 #include "IconsForkAwesome.h"
 #include "imgui_font.h"
 #include "forkawesome.h"
@@ -60,7 +60,7 @@ void updrecords()
             continue;
         }
 
-        rcd.name = p.path().filename().u8string();
+        rcd.name = p.path().filename();
         if(rcd.name.empty())
         {
             continue;
@@ -225,7 +225,7 @@ EXPORT void retro_init(void)
 
 EXPORT void retro_get_system_info(struct retro_system_info *info)
 {
-   const struct retro_system_info myinfo = {"Bewm", "v1", "wav|s3m|mod|xm|flac|ogg|mp3", true, false};
+   const struct retro_system_info myinfo = {"Detonate", "v1", "wav|s3m|mod|xm|flac|ogg|mp3", true, false};
    memcpy(info, &myinfo, sizeof(myinfo));
 }
 
@@ -333,10 +333,12 @@ if (ImGui::BeginMenuBar())
                 }
                 else
                 {
+                  std::string path2 = std::filesystem::path
+                  (std::filesystem::canonical(pwd_) / rsc.name).string();
                    if(music_isplaying())
                    music_stop();
                     selected_fname = rsc.showName ;
-                    music_play((const char*)rsc.name.string().c_str());
+                    music_play((const char*)path2.c_str());
                 }
             }
 
@@ -441,7 +443,7 @@ EXPORT bool retro_load_game(const struct retro_game_info *game)
    ImGui_ImplLibretro_Init();
    ImGui_ImplOpenGL3_Init();
 
-   pwd_ =  std::filesystem::current_path();
+   pwd_ =  std::filesystem::path(game->path).parent_path();
    updrecords();
    return music_play(game->path);
 }

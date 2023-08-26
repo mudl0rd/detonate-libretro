@@ -1,22 +1,22 @@
-project('bewm-libretro', 'c', 'cpp',default_options: [ 'buildtype=debug', 'c_std=c11','cpp_std=c++20'])
+project('detonate-libretro', 'c', 'cpp',default_options: [ 'buildtype=debug', 'c_std=c11','cpp_std=c++20'])
 
 src = []
 
 
 src += [
-    './src/libretro-test.cpp',
-    './src/imgui_libretro.cpp',
-    './src/glsym/rglgen.c',
-    './src/glsym/glsym_gl.c'
+    'src/libretro.cpp',
+    'src/imgui_libretro.cpp',
+    'src/glsym/rglgen.c',
+    'src/glsym/glsym_gl.c'
 ]
 
 
 srcdirs = [
-    './src/deps/imgui',
-    './src/deps/ibxm',
-    './src/mudcode',
-    './src/mudcode/mudutils',
-    './src/mudcode/formats'
+    '../common/deps/imgui',
+    '../common/mudutils',
+    '../common',
+    '../common/formats',
+    '../common/deps/ibxm'
 ]
 
 foreach srcitem : srcdirs
@@ -26,14 +26,15 @@ endforeach
 
 inc = [
   include_directories(
-    'src/deps/imgui',
-    'src/deps',
-    'src/deps/dr',
-    'src/mudcode',
-    'src/mudcode/mudutils',
-    'src/mudcode/formats',
-    'src/deps/stb',
-    'src/deps/ibxm'
+    '../../common/deps/imgui',
+    '../../common/deps',
+    '../../common/deps/dr',
+    '../../common',
+    '../../common/mudutils',
+    '../../common/formats',
+    '../../common/deps/stb',
+    '../../common/deps/ibxm',
+    'src/glsym'
   )
 ]
 
@@ -56,11 +57,12 @@ if host_machine.system() == 'windows'
     '-static'
     ]
 endif
+
 add_project_link_arguments (
 common_ldflags,
 language: [ 'c', 'cpp' ],)
 dir_base = meson.current_source_dir()
 dir_install = join_paths(dir_base, 'compile_dir')
-shared_library('bewm-libretro',install: true,install_dir: dir_install,include_directories : [inc],sources : [src],dependencies : [dl_dep,sdl2dep]
+shared_library('detonate-libretro',install: true,install_dir: dir_install,include_directories : [inc],sources : [src],dependencies : [dl_dep,sdl2dep], cpp_args: '-DLIBRETRO'
 )
 

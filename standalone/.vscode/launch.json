@@ -1,0 +1,101 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "dbg (Linux)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/compile_dir/scratch",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/compile_dir",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+        },
+        {
+            "name": "dbg (Win32)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/compile_dir/detonate.exe",
+            "args": [
+                //      "--core_name=C:/msys64/home/mudlo/libretrocores/libgarbagefire/libgarbagefire.dll",
+                //         "--rom_name=Z:/ROMS/N64/Legend of Zelda, The - Ocarina of Time (USA) (Rev 2).z64"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/compile_dir",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "preLaunchTask": "builddbg",
+            "name": "Compile/Debug (Linux)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/compile_dir/demo",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/compile_dir",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ],
+        },
+        {
+            "preLaunchTask": "builddbg",
+            "name": "Compile/Debug (Windows)",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/compile_dir/detonate.exe",
+            //   "args": [
+            //     "--core_name=C:/msys64/home/mudlo/libretrocores/libgarbagefiar/libgarbagefiar.dll",
+            //     "--rom_name=Z:/ROMS/N64/Legend of Zelda, The - Ocarina of Time (USA) (Rev 2).z64"
+            // ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}/compile_dir",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}

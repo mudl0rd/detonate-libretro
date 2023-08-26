@@ -20,7 +20,7 @@ public:
 
    virtual void stop() = 0;
 
-    virtual bool isplaying() = 0;
+    virtual bool is_playing() = 0;
 
     virtual unsigned song_duration() = 0;
 
@@ -33,10 +33,12 @@ public:
 
 auddecode *create_mp3();
 auddecode *create_flac();
+auddecode *create_vorbis();
+auddecode *create_wav();
 
 typedef   auddecode* (*create_filetype)();
 
-static const char *filetypes = ".mp3|.flac|.ogg|.wv|.wav|.wav|.mod|.s3m|.it|.xm|.umx|.mo3|.sid";
+static const char *filetypes = ".mp3|.flac|.ogg|.wav";
 
 
 static struct auddecode_factory_ {
@@ -44,6 +46,8 @@ static struct auddecode_factory_ {
  }  auddecode_factory []={
     create_mp3,
     create_flac,
+    create_vorbis,
+    create_wav,
     NULL
  };
 
