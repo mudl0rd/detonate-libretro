@@ -25,7 +25,7 @@
             ],
         },
         {
-            "name": "dbg (Win32)",
+            "name": "dbg (Win32, RetroArch)",
             "type": "cppdbg",
             "request": "launch",
             "program": "C:/apps/ra/retroarch.exe",
@@ -53,37 +53,13 @@
             ]
         },
         {
-            "preLaunchTask": "builddbg",
-            "name": "Compile/Debug (Linux)",
+            "name": "dbg (Win32, WTFweg)",
             "type": "cppdbg",
             "request": "launch",
-            "program": "C:/apps/ra/retroarch.exe",
-            "args": [],
-            "stopAtEntry": false,
-    
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "gdb",
-            "miDebuggerPath": "/usr/bin/gdb",
-            "setupCommands": [
-                {
-                    "description": "Enable pretty-printing for gdb",
-                    "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
-                }
-            ],
-        },
-        {
-            "preLaunchTask": "builddbg",
-            "name": "Compile/Debug (Windows)",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "C:/apps/ra/retroarch.exe",
-            "args": [
-                      "-L\"C:/codecrak/wip/bewm_libretro/compile_dir/libbewm-libretro.dll\"",
-                      "C:/codecrak/wip/bewm_libretro/compile_dir/test/test2.flac"
-            ],
-            "cwd": "C:/apps/ra",
+            "program": "C:/codecrak/wip/WTFweg/compile_dir/wtfweg",
+            "args": ["--core_name=C:/codecrak/wip/bewm_libretro/compile_dir/libbewm-libretro.dll",
+            "--rom_name=C:/codecrak/wip/bewm_libretro/compile_dir/test/test.flac"],
+            "cwd": "C:/codecrak/wip/WTFweg/compile_dir",
             "stopAtEntry": false,
             "environment": [],
             "externalConsole": false,
@@ -93,6 +69,11 @@
                 {
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                {
+                    "description": "Set Disassembly Flavor to Intel",
+                    "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
                 }
             ]

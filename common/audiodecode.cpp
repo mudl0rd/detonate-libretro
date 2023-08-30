@@ -26,28 +26,34 @@ const char *get_filename_ext(const char *filename)
 }
 
 
+std::string auddecode_formats()
+{
+   std::ostringstream oss;
+   char const* sep = "";
+   for (int i = 0; auddecode_factory[i].init; ++i) {
+    std::unique_ptr<auddecode_factory_> replay(auddecode_factory[i].init());
+    formats << sep << replay->file_types();
+    sep = "|";
+   }
+   return oss.str();
+}
+
 auddecode *make_decoder(const char* filename)
 {
    auddecode *replay = NULL;
-   int i=0;
-   do
+   for(int i=0;auddecode_factory[i].init;++i)
    {
-      if(!auddecode_factory[i].init)return NULL;
-      replay = auddecode_factory[i].init();
-      const char *ext = get_filename_ext(filename);
-      if(strcmp(ext,replay->file_types())==0){
-      if(!replay->open(filename,&srate,false)){
-     again:
-      delete replay;
-      replay=NULL;
-      i++;
-      continue;
-      }
-      else
-      return replay;
-      }
-      else goto again;
-   }while(1);
+   replay = auddecode_factory[i].init();
+   const char *ext = get_filename_ext(filename);
+   if(strcmp(ext,replay->file_types())==0){
+   if(!replay->open(filename,&srate,false)){
+   delete replay;
+   replay=NULL;
+   }
+   else
+   return replay;
+   }
+   }
 }
 
 #ifdef LIBRETRO
