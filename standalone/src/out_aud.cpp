@@ -136,27 +136,30 @@ void func_callback(void *userdata, Uint8 *stream, int len)
 void audio_mix(void *samples, size_t size_frames)
 {
 
-    struct resampler_data src_data = {0};
     size_t written = 0;
     uint32_t in_len = size_frames * 2;
+    void *out_samples = NULL;
+    size_t out_bytes = 0;
+
+    
+    if(!audio_ctx_s.floating_point)
+    s16tof(audio_ctx_s.input_float, (int16_t*)samples, in_len);
+
     int half_size = (int)(audio_ctx_s._fifo->size / 2);
     int delta_mid = (int)fifo_write_avail(audio_ctx_s._fifo) - half_size;
     double drc_ratio = (double)(audio_ctx_s.client_rate / audio_ctx_s.system_rate) *
                       (1.0 + audio_ctx_s.timing_skew * ((double)delta_mid / half_size));
-    if(!audio_ctx_s.floating_point)
-    s16tof(audio_ctx_s.input_float, (int16_t*)samples, in_len);
-
-    void *out_samples = NULL;
-    size_t out_bytes = 0;
-    if(drc_ratio != 1.0){
-    src_data.input_frames = size_frames;
-    src_data.ratio = drc_ratio;
-    src_data.data_in = 
-    audio_ctx_s.floating_point?(float*)samples:audio_ctx_s.input_float;
-    src_data.data_out = audio_ctx_s.output_float;
-    resampler_sinc_process(audio_ctx_s.resample, &src_data);
-    out_bytes = src_data.output_frames * 2 * sizeof(float);
-    out_samples = audio_ctx_s.output_float;
+    if(drc_ratio != 1.0)
+    {
+           struct resampler_data src_data = {0};
+           src_data.input_frames = size_frames;
+           src_data.ratio = drc_ratio;
+           src_data.data_in = 
+           audio_ctx_s.floating_point?(float*)samples:audio_ctx_s.input_float;
+           src_data.data_out = audio_ctx_s.output_float;
+           resampler_sinc_process(audio_ctx_s.resample, &src_data);
+           out_bytes = src_data.output_frames * 2 * sizeof(float);
+           out_samples = audio_ctx_s.output_float;
     }
     else
     {
@@ -166,7 +169,7 @@ void audio_mix(void *samples, size_t size_frames)
     }
     while (written < out_bytes)
     {
-        //SDL_LockAudioDevice(audio_ctx_s.dev);
+        SDL_LockAudioDevice(audio_ctx_s.dev);
         size_t avail = fifo_write_avail(audio_ctx_s._fifo);
         if (avail)
         {
@@ -176,7 +179,7 @@ void audio_mix(void *samples, size_t size_frames)
                        (const char *)out_samples + written, write_amt);
             written += write_amt;
         }
-      //  SDL_UnlockAudioDevice(audio_ctx_s.dev);
+        SDL_UnlockAudioDevice(audio_ctx_s.dev);
     }
 }
 
@@ -200,13 +203,13 @@ void audio_changeratefps(float refreshra, float input_srate, float fps)
 bool audio_init(float refreshra, float input_srate, float fps,bool fp)
 {
     SDL_AudioSpec shit = {0};
+    
     audio_ctx_s.system_rate = input_srate;
     audio_ctx_s.floating_point = fp;
     audio_ctx_s.timing_skew=0.0;
     audio_changeratefps(refreshra, input_srate, fps);
     SDL_AudioSpec shit2 = {0};
     SDL_GetDefaultAudioInfo(NULL, &shit2, 0);
-
     shit.freq = shit2.freq;
     shit.format = AUDIO_F32;
     shit.samples = 2048;
@@ -218,18 +221,17 @@ bool audio_init(float refreshra, float input_srate, float fps,bool fp)
     SDL_AudioSpec out;
     audio_ctx_s.dev = SDL_OpenAudioDevice(NULL, 0, &shit, &out, 0);
     // allocate some in tank. Accounts for resampler too
-    size_t sampsize = (out.size * 8);
+    size_t sampsize = (out.size*8);
     if(!fp)
     {
         audio_ctx_s.input_float = (float *)memalign_alloc(64, sampsize);
         memset(audio_ctx_s.input_float, 0, sampsize);
     }
-
     audio_ctx_s.output_float = (float *)memalign_alloc(64, sampsize);
     memset(audio_ctx_s.output_float, 0, sampsize);
     audio_ctx_s._fifo = fifo_new(sampsize); // number of bytes
-//    auto tmp = std::make_unique<uint8_t[]>(sampsize);
-  //  fifo_write(audio_ctx_s._fifo, tmp.get(), sampsize);
+    auto tmp = std::make_unique<uint8_t[]>(sampsize);
+    fifo_write(audio_ctx_s._fifo, tmp.get(), sampsize);
     SDL_PauseAudioDevice(audio_ctx_s.dev, 0);
     return true;
 }

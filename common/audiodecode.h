@@ -3,11 +3,14 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string>
 
 bool music_isplaying();
 void music_stop();
 bool music_play(const char* filename);
 void music_run();
+uint32_t music_getduration();
+uint32_t music_getposition();
 
 class auddecode
 {
@@ -30,17 +33,12 @@ public:
 
 	virtual void mix( float *& buffer_samps, unsigned & count) = 0;
 };
-
+std::string auddecode_formats();
 auddecode *create_mp3();
 auddecode *create_flac();
 auddecode *create_vorbis();
 auddecode *create_wav();
-
 typedef   auddecode* (*create_filetype)();
-
-static const char *filetypes = ".mp3|.flac|.ogg|.wav";
-
-
 static struct auddecode_factory_ {
    create_filetype  init; 
  }  auddecode_factory []={

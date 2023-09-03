@@ -64,9 +64,7 @@ public:
     }
 
     unsigned song_duration(){
-        drflac_uint64 index=stream->totalPCMFrameCount*stream->channels;
-        index /= stream->sampleRate;
-        return index;
+         return static_cast<uint32_t>((1000ull * stream->totalPCMFrameCount) / stream->sampleRate);
     }
 
     const char* song_title()

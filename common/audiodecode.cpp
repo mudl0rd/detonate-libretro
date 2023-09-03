@@ -2,6 +2,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sstream>
+#include <memory>
+#include <iostream>
 
 #ifdef LIBRETRO
 #define RESAMPLER_IMPLEMENTATION
@@ -16,6 +19,8 @@ void *resample = NULL;
 
 auddecode *replayer = NULL;
 float srate = 0.0;
+uint64_t sample_count = 0;
+unsigned duration = 0;
 
 const char *get_filename_ext(const char *filename)
 {
@@ -25,14 +30,13 @@ const char *get_filename_ext(const char *filename)
    return dot + 1;
 }
 
-
 std::string auddecode_formats()
 {
    std::ostringstream oss;
    char const* sep = "";
    for (int i = 0; auddecode_factory[i].init; ++i) {
-    std::unique_ptr<auddecode_factory_> replay(auddecode_factory[i].init());
-    formats << sep << replay->file_types();
+   std::unique_ptr<auddecode> replay(auddecode_factory[i].init());
+    oss << sep << replay->file_types();
     sep = "|";
    }
    return oss.str();
@@ -80,7 +84,8 @@ void music_stop()
     {
         replayer->stop();
         delete replayer;
-        replayer = NULL;      
+        replayer = NULL;
+        isplaying=false;      
    #ifndef LIBRETRO  
         audio_destroy();
    #else
@@ -94,6 +99,7 @@ void music_stop()
 bool music_play(const char* filename)
 {
    music_stop();
+   sample_count = 0;
    replayer = make_decoder(filename);
    #ifndef LIBRETRO  
    audio_init(0.0,srate,0.0,true);
@@ -104,10 +110,24 @@ bool music_play(const char* filename)
     memset(input_float, 0, sampsize);
     memset(output_float, 0, sampsize);
    resample = resampler_sinc_init();
+   
    #endif 
-    return (replayer != NULL)?true:false;
+   isplaying=true;
+   duration=replayer->song_duration();
+   return (replayer != NULL)?true:false;
 }
-#define BUFSIZE 4096
+
+uint32_t music_getposition()
+{
+   return replayer && replayer->is_playing()?uint32_t((1000ull * (sample_count)) / srate):0;
+}
+
+uint32_t music_getduration()
+{
+   return duration;
+}
+
+#define BUFSIZE 1024
 void music_run()
 {
    #ifdef LIBRETRO 
@@ -119,6 +139,7 @@ void music_run()
    float *samples2 =NULL;
    unsigned count=0;
    replayer->mix(samples2,count);
+   sample_count += count;
    #ifndef LIBRETRO 
    audio_mix(samples2,count);
    #else

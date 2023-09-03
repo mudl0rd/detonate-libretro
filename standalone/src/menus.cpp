@@ -9,6 +9,7 @@
 #include "cmdline.h"
 #include "audiodecode.h"
 #include "IconsForkAwesome.h"
+#include <chrono>
 
 
 int window_width,window_height;
@@ -28,6 +29,7 @@ struct FileRecord
         };
 std::vector<FileRecord> fileRecords_;
 std::filesystem::path pwd_;
+std::string format_string;
 
 void updrecords()
 {
@@ -59,8 +61,8 @@ void updrecords()
 
         rcd.extension = p.path().filename().extension();
         std::string str2 = p.path().filename().extension().string();
-        const char *fext=str2.c_str();
-        bool ismusicfile=(strstr(filetypes,fext)!=NULL) && !rcd.isDir;
+        str2.erase(str2.begin());
+        bool ismusicfile=(format_string.find(str2)!= std::string::npos) && !rcd.isDir;
         if(!ismusicfile && !rcd.isDir)continue;
        // const int N = sizeof( filetypes ) / sizeof( *filetypes );
         std::string str =  (rcd.isDir ? ICON_FK_FOLDER " " : ICON_FK_MUSIC " ");
@@ -94,7 +96,9 @@ int main(int argc, char *argv[])
   }
 
   pwd_ =  std::filesystem::current_path();
+  format_string = auddecode_formats();
   updrecords();
+  
 
   
 
@@ -180,6 +184,36 @@ bool done = false;
 
 std::string selected_fname;
 
+std::string format_duration( std::chrono::milliseconds ms ) {
+    using namespace std::chrono;
+    auto secs = duration_cast<seconds>(ms);
+    ms -= std::chrono::duration_cast<milliseconds>(secs);
+    auto mins = std::chrono::duration_cast<minutes>(secs);
+    secs -= std::chrono::duration_cast<seconds>(mins);
+    auto hour = std::chrono::duration_cast<hours>(mins);
+    mins -= std::chrono::duration_cast<minutes>(hour);
+    std::string ss;
+     if(hour.count() > 0)
+    {
+      ss+= std::to_string(hour.count());
+      ss+="h";
+      ss+= " : ";
+    }
+    if(mins.count() > 0)
+    {
+    ss+= std::to_string(mins.count());
+    ss+= "m";
+    ss+= " : ";
+    }
+    ss+= std::to_string(secs.count());
+    ss+="s";
+    
+      
+   
+    return ss;
+}
+
+
 
 void rendermenu(SDL_Window *window, bool show_menu)
 {
@@ -192,6 +226,8 @@ void rendermenu(SDL_Window *window, bool show_menu)
     ImGui::SetNextWindowSize(ImVec2(window_width,window_height));
     ImGui::SetNextWindowPos(ImVec2(0.5f,0.5f));
     ImGui::Begin("test", NULL, ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoTitleBar| ImGuiWindowFlags_MenuBar);
+ImGuiStyle& style = ImGui::GetStyle();
+
 
 if (ImGui::BeginMenuBar())
 		{
@@ -207,9 +243,31 @@ if (ImGui::BeginMenuBar())
 			}
 			ImGui::EndMenuBar();
 		}
+      ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 5.f);
       ImGui::Button(ICON_FK_PAUSE);
-       ImGui::SameLine();
-      ImGui::Button(ICON_FK_STOP);
+      ImGui::PopStyleVar(1);
+      ImGui::SameLine();
+
+      ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 5.f);
+      ImGui::PushStyleColor(ImGuiCol_Button,style.Colors[ImGuiCol_ButtonHovered]);
+      ImGui::Button(ICON_FK_REPEAT);
+      ImGui::PopStyleColor(1);
+      ImGui::PopStyleVar(1);
+        
+      if(music_isplaying() && music_getduration())
+      {
+        int pos = music_getposition();
+        ImGui::SameLine();
+        std::string posstring = format_duration(std::chrono::milliseconds(pos));
+        std::string posstring_dr = format_duration(std::chrono::milliseconds(music_getduration()));
+        posstring += " / ";
+        posstring += posstring_dr;
+        ImGui::SliderInt("slider position", &pos, 0,music_getduration(),posstring.c_str());
+      }
+     
+       
+
+
      float reserveHeight = ImGui::GetFrameHeightWithSpacing();
      ImGui::BeginChild("ch", ImVec2(0, -reserveHeight), true,
       ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_HorizontalScrollbar);

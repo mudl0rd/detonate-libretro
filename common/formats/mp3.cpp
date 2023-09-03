@@ -1,5 +1,6 @@
 #include "../audiodecode.h"
 #define DR_MP3_IMPLEMENTATION
+#define DR_MP3_FLOAT_OUTPUT
 #include <dr/dr_mp3.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -49,7 +50,6 @@ public:
         isplaying2=false;
         if(&stream)
         drmp3_uninit(&stream);
-       
         }
     }
 
@@ -59,10 +59,11 @@ public:
     }
 
     unsigned song_duration(){
-        drmp3_uint64 index=drmp3_get_pcm_frame_count(&stream)*stream.channels;
-        index /= stream.sampleRate;
-        return index;
+       drmp3_uint64 index=drmp3_get_pcm_frame_count(&stream)*1000ull;
+       index /= stream.sampleRate;
+       return index;
     }
+
 
     const char* song_title()
     {
@@ -79,7 +80,7 @@ public:
         float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = { 0 };
         unsigned temp_samples=0;
          if(isplaying2){
-     again:
+      again:
       temp_samples = (unsigned)drmp3_read_pcm_frames_f32(&stream,NUM_FRAMES, temp_buffer);
       if (temp_samples == 0)
       {
@@ -90,7 +91,6 @@ public:
          }
          isplaying2=false;
       }
-    
     }
       buffer_samps = temp_buffer;
       count = temp_samples;

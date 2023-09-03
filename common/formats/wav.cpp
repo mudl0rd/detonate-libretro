@@ -48,7 +48,7 @@ public:
         if(isplaying2)
         {
          isplaying2=false;
-        drwav_free(&stream,NULL);
+        drwav_uninit(&stream);
         }
     }
 
@@ -60,7 +60,7 @@ public:
     unsigned song_duration(){
         drwav_uint64 index;
         drwav_get_length_in_pcm_frames(&stream,&index);
-        index *= stream.channels;
+        index *=1000ull;
         index /= stream.sampleRate;
         return index;
     }
@@ -74,6 +74,7 @@ public:
     const char* file_types(){
          return "wav";
     }
+
 
 	void mix( float *& buffer_samps, unsigned & count)
     {

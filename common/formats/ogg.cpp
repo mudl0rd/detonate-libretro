@@ -57,7 +57,7 @@ public:
     }
 
     unsigned song_duration(){
-        return stb_vorbis_stream_length_in_seconds(stream);
+        return uint32_t(stb_vorbis_stream_length_in_seconds(stream)*1000ull);
     }
 
     const char* song_title()
@@ -67,8 +67,9 @@ public:
     }
 
     const char* file_types(){
-         return "mp3";
+         return "ogg";
     }
+
 
 	void mix( float *& buffer_samps, unsigned & count)
     {
