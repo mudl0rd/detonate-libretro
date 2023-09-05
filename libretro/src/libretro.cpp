@@ -10,9 +10,6 @@
 #include "imgui_libretro.h"
 #include "glsym/glsym.h"
 #include "audiodecode.h"
-#include "IconsForkAwesome.h"
-#include "imgui_font.h"
-#include "forkawesome.h"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 static struct retro_hw_render_callback hw_render;
@@ -27,61 +24,6 @@ retro_audio_sample_batch_t audio_batch_cb = NULL;
 retro_input_poll_t poller_cb = NULL;
 retro_input_state_t input_state_cb = NULL;
 retro_keyboard_callback kb_cb;
-
-struct FileRecord
-        {
-            bool                  isDir = false;
-            std::filesystem::path name;
-            std::string           showName;
-            std::filesystem::path extension;
-        };
-std::vector<FileRecord> fileRecords_;
-std::filesystem::path pwd_;
-
-void updrecords()
-{
-   fileRecords_.clear();
-   fileRecords_ = { FileRecord{ true, "..", ICON_FK_FOLDER" ..", "" } };
-
-    for(auto &p : std::filesystem::directory_iterator(pwd_))
-    {
-        FileRecord rcd;
-
-        if(p.is_regular_file())
-        {
-            rcd.isDir = false;
-        }
-        else if(p.is_directory())
-        {
-            rcd.isDir = true;
-        }
-        else
-        {
-            continue;
-        }
-
-        rcd.name = p.path().filename();
-        if(rcd.name.empty())
-        {
-            continue;
-        }
-
-        rcd.extension = p.path().filename().extension();
-        std::string str2 = p.path().filename().extension().string();
-        const char *fext=str2.c_str();
-        bool ismusicfile=(strstr(filetypes,fext)!=NULL) && !rcd.isDir;
-        if(!ismusicfile && !rcd.isDir)continue;
-       // const int N = sizeof( filetypes ) / sizeof( *filetypes );
-        std::string str =  (rcd.isDir ? ICON_FK_FOLDER " " : ICON_FK_MUSIC " ");
-        rcd.showName = str + p.path().filename().string();
-        fileRecords_.push_back(rcd);
-    }
-    std::sort(fileRecords_.begin(), fileRecords_.end(),
-        [](const FileRecord &L, const FileRecord &R)
-    {
-        return (L.isDir ^ R.isDir) ? L.isDir : (L.name < R.name);
-    });
-} 
 
 #ifndef EXTERNC
 #ifdef __cplusplus
@@ -280,86 +222,14 @@ EXPORT void retro_run(void)
    ImGui_ImplLibretro_ProcessMW(0.0);
    ImGui_ImplOpenGL3_NewFrame();
    glBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
-   ImGui::NewFrame();
-    ImGui::SetNextWindowSize(ImVec2(width,height));
-    ImGui::SetNextWindowPos(ImVec2(0.5f,0.5f));
-    ImGui::Begin("test", NULL, ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_NoTitleBar| ImGuiWindowFlags_MenuBar);
-
-if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("File"))
-			{
-				
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Help "))
-			{
-				ImGui::MenuItem("Dummy");
-				ImGui::EndMenu();
-			}
-			ImGui::EndMenuBar();
-		}
-      ImGui::Button(ICON_FK_PAUSE);
-       ImGui::SameLine();
-      ImGui::Button(ICON_FK_STOP);
-     float reserveHeight = ImGui::GetFrameHeightWithSpacing();
-     ImGui::BeginChild("ch", ImVec2(0, -reserveHeight), true,
-      ImGuiWindowFlags_AlwaysAutoResize|ImGuiWindowFlags_HorizontalScrollbar);
-    float panelHeight = ImGui::GetContentRegionAvail().y;
-    float cellSize = ImGui::GetTextLineHeight();
-    int items_sz=fileRecords_.size()*cellSize;
-    int columns=(int)(items_sz/(int)panelHeight)+1;
-    float items=0;
-	ImGui::Columns(columns, 0, false);
-     for(auto &rsc : fileRecords_)
-        {
-
-            if(!rsc.name.empty() && rsc.name.c_str()[0] == '$')
-            {
-                continue;
-            }
-
-            bool selected = rsc.showName == selected_fname;
-
-            ImGui::Selectable(rsc.showName.c_str(), selected,
-                          ImGuiSelectableFlags_DontClosePopups);
-
-            if(ImGui::IsItemClicked(0) && ImGui::IsMouseDoubleClicked(0))
-            {
-                if(rsc.isDir)
-                {
-                 pwd_ = (rsc.name != "..") ? (pwd_ / rsc.name) :pwd_.parent_path();
-                 updrecords();
-                }
-                else
-                {
-                  std::string path2 = std::filesystem::path
-                  (std::filesystem::canonical(pwd_) / rsc.name).string();
-                   if(music_isplaying())
-                   music_stop();
-                    selected_fname = rsc.showName ;
-                    music_play((const char*)path2.c_str());
-                }
-            }
-
-            items += cellSize;
-            if(items<=panelHeight)
-            {
-              items=0;
-              ImGui::NextColumn();
-            }
-        }
-    ImGui::Columns(1);
-    ImGui::EndChild();
-    ImGui::End();
-    // Rendering
-    ImGui::Render();
+   void menus_run();
+   menus_run();
     glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
     glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound, but prefer using the GL3+ code.
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
    video_cb(RETRO_HW_FRAME_BUFFER_VALID, width, height, 0);
 
-   music_run();
+   
 
 }
 
@@ -409,22 +279,8 @@ EXPORT bool retro_unserialize(const void *data, size_t size)
 
 EXPORT bool retro_load_game(const struct retro_game_info *game)
 {
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    io.DisplaySize = ImVec2((float)width, (float)height);
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    io.MouseDrawCursor = true;
-    // Setup Dear ImGui style
-    io.IniFilename = NULL;
-  ImFontConfig font_cfg;
-  font_cfg.FontDataOwnedByAtlas = false;
-  static const ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_FK, 0 };
-  io.Fonts->AddFontFromMemoryTTF((unsigned char *)Roboto_Regular, sizeof(Roboto_Regular),12.0f, &font_cfg, io.Fonts->GetGlyphRangesJapanese());
-  font_cfg.MergeMode = true;
-  font_cfg.GlyphMinAdvanceX = 13.0f; // Use if you want to make the icon monospaced
-  io.Fonts->AddFontFromMemoryCompressedTTF((unsigned char*)forkawesome_compressed_data,forkawesome_compressed_size,12.0f,&font_cfg,icons_ranges);             // Merge into first font
-  io.Fonts->Build();
+    void menus_init(float dpi_scaling);
+    menus_init(96.0);
 
 
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;
@@ -442,9 +298,6 @@ EXPORT bool retro_load_game(const struct retro_game_info *game)
 
    ImGui_ImplLibretro_Init();
    ImGui_ImplOpenGL3_Init();
-
-   pwd_ =  std::filesystem::path(game->path).parent_path();
-   updrecords();
    return music_play(game->path);
 }
 

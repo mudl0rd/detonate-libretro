@@ -3,14 +3,14 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_opengl.h"
 #include "glad.h"
+#define SDL_MAIN_HANDLED
 #include <SDL2/SDL.h>
-#include "imgui_font.h"
-#include "forkawesome.h"
-#include "IconsForkAwesome.h"
+#include <filesystem>
+#include "cmdline.h"
 
 #define WIDTH 1280
 #define HEIGHT 720
-SDL_DisplayMode dm;
+
 
 int ui()
 {
@@ -44,32 +44,18 @@ int ui()
   int win_w = display_bounds.w * 7 / 8, win_h = display_bounds.h * 7 / 8;
   SDL_SetWindowSize(window, win_w, win_h);
   SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-  SDL_GetDesktopDisplayMode(window_indx, &dm);
+  SDL_GetDesktopDisplayMode(window_indx, &DM);
   int swap = 1;
-  swap = (int)dm.refresh_rate / (int)60;
-  float refreshtarget = dm.refresh_rate / swap;
+  swap = (int)DM.refresh_rate / (int)60;
+  float refreshtarget = DM.refresh_rate / swap;
   float timing_skew = fabs(1.0f - 60 / refreshtarget);
   if (timing_skew <= 0.05)
     SDL_GL_SetSwapInterval((int)swap);
   else
     SDL_GL_SetSwapInterval(1);
 
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  io.IniFilename = NULL;
-
-  ImFontConfig font_cfg;
-  font_cfg.FontDataOwnedByAtlas = false;
-  static const ImWchar icons_ranges[] = { ICON_MIN_FK, ICON_MAX_FK, 0 };
-  io.Fonts->AddFontFromMemoryTTF((unsigned char *)Roboto_Regular, sizeof(Roboto_Regular), dpi_scaling * 12.0f, &font_cfg, io.Fonts->GetGlyphRangesJapanese());
-  font_cfg.MergeMode = true;
-  font_cfg.GlyphMinAdvanceX = 13.0f; // Use if you want to make the icon monospaced
-  io.Fonts->AddFontFromMemoryCompressedTTF((unsigned char*)forkawesome_compressed_data,forkawesome_compressed_size,dpi_scaling * 12.0f,&font_cfg,icons_ranges);             // Merge into first font
-  io.Fonts->Build();
-  ImGuiStyle *style = &ImGui::GetStyle();
-  style->ScaleAllSizes(dpi_scaling);
-  ImGui::StyleColorsDark();
+  void menus_init(float dpi_scaling);
+  menus_init(dpi_scaling);
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
   // Main loop
@@ -87,4 +73,114 @@ int ui()
 }
 
 
+int main(int argc, char *argv[])
+{
+  if (argc > 2)
+  {
+    cmdline::parser a;
+    a.add<std::string>("core_name", 'c', "core filename", true, "");
+    a.add<std::string>("rom_name", 'r', "rom filename", true, "");
+    a.add("pergame", 'g', "per-game configuration");
+    a.parse_check(argc, argv);
+    std::string rom = a.get<std::string>("rom_name");
+    std::string core = a.get<std::string>("core_name");
+   // bool pergame = a.exist("pergame");
+    //if (!rom.empty() && !core.empty())
+    //  return main2(rom.c_str(), core.c_str(), pergame);
+   // else
+      //printf("\nPress any key to continue....\n");
+    //return 0;
+  }
+  return ui();
+}
 
+#ifdef _WIN32
+
+#include <windows.h>
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                   LPSTR lpCmdLine, int nCmdShow) {
+    // avoid unused argument error while matching template
+    ((void)hInstance);
+    ((void)hPrevInstance);
+    ((void)lpCmdLine);
+    ((void)nCmdShow);
+    return main(__argc,__argv);
+}
+
+#endif
+
+
+void droppedfile(char* filename)
+{
+
+}
+
+void looping(SDL_Window *window)
+{
+bool done = false;
+  bool show_menu = true;
+  while (!done)
+  {
+    // Poll and handle events (inputs, window resize, etc.)
+    // You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+    // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
+    // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
+    // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+    SDL_Event event;
+    while (SDL_PollEvent(&event) != 0)
+    {
+
+      ImGui_ImplSDL2_ProcessEvent(&event);
+      if (event.type == SDL_QUIT)
+        done = true;
+      if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
+        done = true;
+
+      if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_F1)
+      {
+        show_menu = !show_menu;
+        break;
+      }
+
+      if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED)
+      {
+        int w = event.window.data1;
+        int h = event.window.data2;
+
+        glViewport(0, 0, w, h);
+        glScissor(0, 0, w, h);
+        extern void resizeui(int width, int height);
+        resizeui(w,h);
+      }
+      if (event.type == SDL_DROPFILE)
+      {
+        char *filez = (char *)event.drop.file;
+        extern void droppedfile(char* filename);
+        droppedfile(filez);
+        SDL_free(filez);
+      }
+    }
+
+    glClearColor(0., 0., 0., 1.0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    extern void rendermenu(SDL_Window *window, bool show_menu);
+    rendermenu(window, show_menu);
+  }
+}
+
+
+
+
+
+void rendermenu(SDL_Window *window, bool show_menu)
+{
+  ImGui_ImplOpenGL3_NewFrame();
+  ImGui_ImplSDL2_NewFrame();
+ 
+  void menus_run();
+  menus_run();
+ 
+  ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+  SDL_GL_SwapWindow(window);
+}
