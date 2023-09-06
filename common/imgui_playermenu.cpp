@@ -85,13 +85,20 @@ void updrecords()
             continue;
         }
 
+        std::string str;
+
+        if(!rcd.isDir)
+        {
         rcd.extension = p.path().filename().extension();
         std::string str2 = p.path().filename().extension().string();
         str2.erase(str2.begin());
-        bool ismusicfile=(format_string.find(str2)!= std::string::npos) && !rcd.isDir;
-        if(!ismusicfile && !rcd.isDir)continue;
-       // const int N = sizeof( filetypes ) / sizeof( *filetypes );
-        std::string str =  (rcd.isDir ? ICON_FK_FOLDER " " : ICON_FK_MUSIC " ");
+        bool ismusicfile=(format_string.find(str2)!= std::string::npos);
+        if(!ismusicfile)continue;
+        else
+        str = ICON_FK_MUSIC " ";
+        }
+        else
+        str =  ICON_FK_FOLDER " ";
         rcd.showName = str + p.path().filename().string();
         fileRecords_.push_back(rcd);
     }
@@ -102,8 +109,9 @@ void updrecords()
     });
 }
 
-void menus_init(float dpi_scaling)
+void menus_init(float dpi_scaling, int width, int height)
 {
+  resizeui(width, height);
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
