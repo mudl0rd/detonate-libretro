@@ -54,8 +54,8 @@ int ui()
   else
     SDL_GL_SetSwapInterval(1);
 
-  void menus_init(float dpi_scaling);
-  menus_init(dpi_scaling);
+  void menus_init(float dpi_scaling,int width, int height);
+  menus_init(dpi_scaling,WIDTH,HEIGHT);
   ImGui_ImplSDL2_InitForOpenGL(window, gl_context);
   ImGui_ImplOpenGL3_Init(glsl_version);
   // Main loop
