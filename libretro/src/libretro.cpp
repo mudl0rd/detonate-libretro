@@ -42,7 +42,6 @@ retro_keyboard_callback kb_cb;
 #define EXPORT EXTERNC __attribute__((visibility("default")))
 #endif
 #endif
-std::string selected_fname;
 #define BASE_WIDTH 1280
 #define BASE_HEIGHT 720
 #define MAX_WIDTH 2048
@@ -200,6 +199,8 @@ struct  mouseloop {
     {2,RETRO_DEVICE_ID_MOUSE_MIDDLE}
  };
 
+extern void menus_run();
+
 EXPORT void retro_run(void)
 {
    poller_cb();
@@ -222,7 +223,6 @@ EXPORT void retro_run(void)
    ImGui_ImplLibretro_ProcessMW(0.0);
    ImGui_ImplOpenGL3_NewFrame();
    glBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
-   void menus_run();
    menus_run();
     glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
     glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound, but prefer using the GL3+ code.
@@ -277,10 +277,11 @@ EXPORT bool retro_unserialize(const void *data, size_t size)
    return true;
 }
 
+extern void menus_init(float dpi_scaling, int width, int height);
+
 EXPORT bool retro_load_game(const struct retro_game_info *game)
 {
-    void menus_init(float dpi_scaling);
-    menus_init(96.0);
+    menus_init(96.0,width,height);
 
 
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;

@@ -30,8 +30,8 @@
             "request": "launch",
             "program": "C:/apps/ra/retroarch.exe",
             "args": [
-                      "-L\"C:/codecrak/wip/bewm_libretro/compile_dir/libbewm-libretro.dll\"",
-                      "C:/codecrak/wip/bewm_libretro/compile_dir/test/test.flac"
+                      "-L\"C:/codecrak/wip/detonate-libretro/libretro/compile_dir/libdetonate-libretro.dll\"",
+                      "C:/codecrak/wip/detonate-libretro/test/test.flac"
             ],
             "cwd": "C:/apps/ra",
             "stopAtEntry": false,
@@ -57,8 +57,8 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "C:/codecrak/wip/WTFweg/compile_dir/wtfweg",
-            "args": ["--core_name=C:/codecrak/wip/bewm_libretro/compile_dir/libbewm-libretro.dll",
-            "--rom_name=C:/codecrak/wip/bewm_libretro/compile_dir/test/test.flac"],
+            "args": ["--core_name=C:/codecrak/wip/detonate-libretro/libretro/compile_dir/libdetonate-libretro.dll",
+            "--rom_name=C:/codecrak/wip/detonate-libretro/test/test.flac"],
             "cwd": "C:/codecrak/wip/WTFweg/compile_dir",
             "stopAtEntry": false,
             "environment": [],
