@@ -112,9 +112,14 @@ void updrecords()
 void menus_init(float dpi_scaling, int width, int height)
 {
   resizeui(width, height);
+  
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
+  io.DisplaySize = ImVec2((float)width, (float)height);
+  #ifdef LIBRETRO
+  io.MouseDrawCursor = true;
+  #endif
   io.IniFilename = NULL;
   ImFontConfig font_cfg;
   font_cfg.FontDataOwnedByAtlas = false;
@@ -187,6 +192,7 @@ if (ImGui::BeginMenuBar())
     float cellSize = ImGui::GetTextLineHeight();
     int items_sz=fileRecords_.size()*cellSize;
     int columns=(int)(items_sz/(int)panelHeight)+1;
+    if(columns < 0)columns=1;
     float items=0;
 	ImGui::Columns(columns, 0, false);
      for(auto &rsc : fileRecords_)
@@ -227,7 +233,6 @@ if (ImGui::BeginMenuBar())
               ImGui::NextColumn();
             }
         }
-    ImGui::Columns(1);
     ImGui::EndChild();
     ImGui::End();
     // Rendering

@@ -19,6 +19,7 @@ unsigned get_filesize(const char *path);
 void *openlib(const char *path);
 void *getfunc(void *handle, const char *funcname);
 void freelib(void *handle);
+int getwindowdpi();
 std::string get_exename();
 void vector_appendbytes(std::vector<uint8_t> &vec, uint8_t *bytes, size_t len);
 std::vector<uint8_t> load_data(const char *path, unsigned *size);

@@ -10,6 +10,7 @@
 #include "imgui_libretro.h"
 #include "glsym/glsym.h"
 #include "audiodecode.h"
+#include "utils.h"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
 static struct retro_hw_render_callback hw_render;
@@ -223,8 +224,10 @@ EXPORT void retro_run(void)
    ImGui_ImplLibretro_ProcessMW(0.0);
    ImGui_ImplOpenGL3_NewFrame();
    glBindFramebuffer(RARCH_GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
+   glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
+   glScissor(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
    menus_run();
-    glViewport(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
+    
     glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound, but prefer using the GL3+ code.
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
    video_cb(RETRO_HW_FRAME_BUFFER_VALID, width, height, 0);
@@ -281,7 +284,8 @@ extern void menus_init(float dpi_scaling, int width, int height);
 
 EXPORT bool retro_load_game(const struct retro_game_info *game)
 {
-    menus_init(96.0,width,height);
+   float scale = getwindowdpi() / 72.f;
+    menus_init(scale,width,height);
 
 
    enum retro_pixel_format fmt = RETRO_PIXEL_FORMAT_XRGB8888;

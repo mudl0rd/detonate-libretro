@@ -93,6 +93,42 @@ bool save_data(unsigned char *data, unsigned size, const char *path)
 	return true;
 }
 
+#ifdef _WIN32
+typedef enum MONITOR_DPI_TYPE {
+  MDT_EFFECTIVE_DPI = 0,
+  MDT_ANGULAR_DPI = 1,
+  MDT_RAW_DPI = 2,
+  MDT_DEFAULT
+} ;
+typedef HRESULT(CALLBACK *GetDpiForMonitor_)(HMONITOR, MONITOR_DPI_TYPE, UINT *,
+                                             UINT *);
+#endif
+
+int getwindowdpi()
+{
+	#ifdef _WIN32
+	HINSTANCE shcore = LoadLibrary("Shcore.dll");
+    if (shcore != nullptr)
+    {
+        if (auto getDpiForMonitor =
+                GetDpiForMonitor_(GetProcAddress(shcore, "GetDpiForMonitor")))
+        {
+            HWND activeWindow = ::GetActiveWindow();
+	        HMONITOR monitor = MonitorFromWindow(activeWindow, MONITOR_DEFAULTTONEAREST);
+            UINT xScale, yScale;
+            getDpiForMonitor(monitor,MDT_EFFECTIVE_DPI, &xScale, &yScale);
+	        FreeLibrary(shcore);
+            return xScale;
+        }
+    }
+	else
+	return 96;
+	#else
+	
+	return 96;
+	#endif
+}
+
 void *openlib(const char *path)
 {
 #ifdef _WIN32
