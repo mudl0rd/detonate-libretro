@@ -102,6 +102,12 @@ typedef enum MONITOR_DPI_TYPE {
 } ;
 typedef HRESULT(CALLBACK *GetDpiForMonitor_)(HMONITOR, MONITOR_DPI_TYPE, UINT *,
                                              UINT *);
+#else
+#include <xlib.h>
+ /* handle returned by dlopen () */
+static XOPENDISPLAY func_XOpenDisplay;
+static XCLOSEDISPLAY func_XCloseDisplay;
+static XQUERYPOINTER func_XQueryPointer;
 #endif
 
 int getwindowdpi()
@@ -124,6 +130,28 @@ int getwindowdpi()
 	else
 	return 96;
 	#else
+	void *x11_h;
+	Display *x11_display;
+    Window x11_window;
+	x11_h = dlopen ("libX11.so", RTLD_LAZY);
+    if (x11_h != NULL) {
+	func_XOpenDisplay = dlsym (x11_h, "XOpenDisplay");
+	func_XCloseDisplay = dlsym (x11_h, "XCloseDisplay");
+	if (func_XOpenDisplay != NULL &&
+	    func_XCloseDisplay != NULL) {
+	    x11_display = (*func_XOpenDisplay) (0);
+	    if (x11_display)
+		x11_window = DefaultRootWindow (x11_display);
+		double xres;
+		xres = ((((double) DisplayWidth(x11_display,scr)) * 25.4) / 
+        ((double) DisplayWidthMM(x11_display,scr)));
+		 int x = (int) (xres + 0.5);
+		(*func_XCloseDisplay) (x11_display);
+    	if (x11_h != NULL)
+		dlclose (x11_h);
+		return x;
+	}
+   }
 	
 	return 96;
 	#endif
