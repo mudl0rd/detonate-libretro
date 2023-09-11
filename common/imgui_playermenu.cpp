@@ -105,6 +105,13 @@ void updrecords()
     });
 }
 
+void menus_setdir(const char* dir)
+{
+std::filesystem::path pah(dir);
+pwd_ =  pah.parent_path();
+updrecords();
+}
+
 void menus_init(float dpi_scaling, int width, int height)
 {
   resizeui(width, height);

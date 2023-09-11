@@ -282,6 +282,8 @@ EXPORT bool retro_unserialize(const void *data, size_t size)
 
 extern void menus_init(float dpi_scaling, int width, int height);
 
+extern void menus_setdir(const char* dir);
+
 EXPORT bool retro_load_game(const struct retro_game_info *game)
 {
    float scale = getwindowdpi() / 72.f;
@@ -303,6 +305,7 @@ EXPORT bool retro_load_game(const struct retro_game_info *game)
 
    ImGui_ImplLibretro_Init();
    ImGui_ImplOpenGL3_Init();
+    menus_setdir(game->path);
    return music_play(game->path);
 }
 
