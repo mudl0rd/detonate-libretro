@@ -79,18 +79,14 @@ void updrecords()
             continue;
         }
 
-        rcd.name = p.path().filename().u8string();
-        if(rcd.name.empty())
-        {
-            continue;
-        }
-
+        rcd.name = p.path().filename();
+        if(rcd.name.empty())continue;
         std::string str;
-
         if(!rcd.isDir)
         {
         rcd.extension = p.path().filename().extension();
-        std::string str2 = p.path().filename().extension().string();
+        if(rcd.extension.empty())continue;
+        std::string str2=rcd.extension.string();
         str2.erase(str2.begin());
         bool ismusicfile=(format_string.find(str2)!= std::string::npos);
         if(!ismusicfile)continue;

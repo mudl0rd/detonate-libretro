@@ -10,8 +10,6 @@
 #define RESAMPLER_IMPLEMENTATION
 #include "libretro.h"
 #include "resampler.h"
-float *input_float = NULL;
-float *output_float = NULL;
 void *resample = NULL;
 #else
 #include "out_aud.h"
@@ -89,8 +87,6 @@ void music_stop()
    #ifndef LIBRETRO  
         audio_destroy();
    #else
-        free(input_float);
-        free(output_float);
         resampler_sinc_free(resample);      
    #endif
     }
@@ -104,13 +100,7 @@ bool music_play(const char* filename)
    #ifndef LIBRETRO  
    audio_init(0.0,srate,0.0,true);
    #else
-   size_t sampsize = ((2048*sizeof(float)) * 8);
-   input_float = (float *)malloc(sampsize);
-    output_float = (float *)malloc(sampsize);
-    memset(input_float, 0, sampsize);
-    memset(output_float, 0, sampsize);
    resample = resampler_sinc_init();
-   
    #endif 
    isplaying=true;
    duration=replayer->song_duration();
@@ -130,10 +120,6 @@ uint32_t music_getduration()
 #define BUFSIZE 1024
 void music_run()
 {
-   #ifdef LIBRETRO 
-   float samples[BUFSIZE * 2] = {0};
-   int16_t samples_int[2 * BUFSIZE] = {0};
-   #endif
    if(replayer &&replayer->is_playing())
    {
    float *samples2 =NULL;
@@ -146,19 +132,28 @@ void music_run()
    extern retro_audio_sample_batch_t audio_batch_cb;
    if(srate != 44100)
    {
+   double ratio = 44100.f/srate;
+  int largest_chunk_size = 4096;
+  int sampsize= (unsigned int)(ratio*largest_chunk_size*sizeof(float)*2+0.5);
+  std::unique_ptr<float[]> output_float = std::make_unique<float[]>(sampsize);
+  std::unique_ptr<int16_t[]> samples_int = std::make_unique<int16_t[]>(sampsize);
+  float *out_ptr = output_float.get();
+  int16_t *int_ptr = samples_int.get();
     struct resampler_data src_data = {0};
     src_data.input_frames = count;
-    src_data.ratio = 44100.f/srate;
-    src_data.data_in = samples;
-    src_data.data_out = output_float;
+    src_data.ratio = ratio;
+    src_data.data_in = samples2;
+    src_data.data_out = out_ptr;
     resampler_sinc_process(resample, &src_data);
-    convert_float_to_s16(samples_int, output_float,src_data.output_frames*2);
-    audio_batch_cb(samples_int,src_data.output_frames);
+    convert_float_to_s16(int_ptr,out_ptr,src_data.output_frames*2);
+    audio_batch_cb(int_ptr,src_data.output_frames);
    }
    else
    {
-   convert_float_to_s16(samples_int, samples,count*2);
-   audio_batch_cb(samples_int,count);
+   std::unique_ptr<int16_t[]> samples_int = std::make_unique<int16_t[]>(count*2);
+   int16_t *int_ptr = samples_int.get();
+   convert_float_to_s16(int_ptr, samples2,count*2);
+   audio_batch_cb(int_ptr,count);
    }
    #endif
 
