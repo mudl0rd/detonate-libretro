@@ -113,7 +113,7 @@ std::filesystem::path pah(dir);
 pwd_ =  pah.parent_path();
 updrecords();
 }
-ImGuiContext*   imgui_ctx;
+
 void menus_init(float dpi_scaling, int width, int height)
 {
   resizeui(width, height);
