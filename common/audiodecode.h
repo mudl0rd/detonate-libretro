@@ -11,6 +11,7 @@ bool music_play(const char* filename);
 void music_run();
 uint32_t music_getduration();
 uint32_t music_getposition();
+uint32_t music_setposition(uint64_t pos);
 
 class auddecode
 {

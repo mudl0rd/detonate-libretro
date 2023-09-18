@@ -107,6 +107,17 @@ bool music_play(const char* filename)
    return (replayer != NULL)?true:false;
 }
 
+uint32_t music_setposition(uint64_t pos)
+{
+   if(replayer && replayer->is_playing())
+   {
+      replayer->seek(pos);
+      sample_count = uint32_t((srate * pos) / 1000);
+      return sample_count;
+   }
+   return 0;
+}
+
 uint32_t music_getposition()
 {
    return replayer && replayer->is_playing()?uint32_t((1000ull * (sample_count)) / srate):0;

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include "imgui_font.h"
+#include "imgui_internal.h"
 #include "forkawesome.h"
 #include "IconsForkAwesome.h"
 #include "audiodecode.h"
@@ -29,6 +30,7 @@ std::vector<FileRecord> fileRecords_;
 std::filesystem::path pwd_;
 std::string selected_fname;
 std::string format_string;
+int toseekto = 0;
 
 std::string format_duration( std::chrono::milliseconds ms ) {
     using namespace std::chrono;
@@ -111,7 +113,7 @@ std::filesystem::path pah(dir);
 pwd_ =  pah.parent_path();
 updrecords();
 }
-
+ImGuiContext*   imgui_ctx;
 void menus_init(float dpi_scaling, int width, int height)
 {
   resizeui(width, height);
@@ -190,7 +192,10 @@ if (ImGui::BeginMenuBar())
         std::string posstring_dr = format_duration(std::chrono::milliseconds(music_getduration()));
         posstring += " / ";
         posstring += posstring_dr;
-        ImGui::SliderInt("slider position", &pos, 0,music_getduration(),posstring.c_str());
+        if(ImGui::SliderInt("Song position", &pos, 0,music_getduration(),posstring.c_str()) && ImGui::IsItemEdited())
+        toseekto=pos;
+       if(ImGui::IsItemDeactivatedAfterEdit())
+        music_setposition(toseekto);
       }
      
        
