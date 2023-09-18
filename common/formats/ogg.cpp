@@ -77,7 +77,7 @@ public:
         unsigned temp_samples=0;
          if(isplaying2){
      again:
-      temp_samples= stb_vorbis_get_samples_float_interleaved(stream, 2,temp_buffer,NUM_FRAMES);
+      temp_samples= stb_vorbis_get_samples_float_interleaved(stream, 2,temp_buffer,NUM_FRAMES*2);
       if (temp_samples == 0)
       {
          if (repeat)

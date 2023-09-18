@@ -133,6 +133,14 @@ void menus_init(float dpi_scaling, int width, int height)
   io.Fonts->AddFontFromMemoryCompressedTTF((unsigned char*)forkawesome_compressed_data,forkawesome_compressed_size,dpi_scaling * 12.0f,&font_cfg,icons_ranges);             // Merge into first font
   io.Fonts->Build();
   ImGuiStyle *style = &ImGui::GetStyle();
+  style->TabRounding = 4;
+  style->ScrollbarRounding = 9;
+  style->WindowRounding = 7;
+  style->GrabRounding = 3;
+  style->FrameRounding = 3;
+  style->PopupRounding = 4;
+  style->ChildRounding = 4;
+  style->ScrollbarSize = 10.0f;
   style->ScaleAllSizes(dpi_scaling);
   ImGui::StyleColorsDark();
   pwd_ =  std::filesystem::current_path();
