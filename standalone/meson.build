@@ -11,10 +11,9 @@ src = []
 srcdirs = [
     '../common/deps/imgui',
     '../common/mudutils',
-    '../common',
+    '../common/player',
     'src',
-    '../common/formats',
-    '../common/deps/ibxm'
+    '../common/deps/decoder/ibxm'
 ]
 foreach srcitem : srcdirs
   glob = run_command('python3', 'src_batch.py',srcitem)
@@ -24,12 +23,18 @@ inc = [
   include_directories(
     '../../common/deps/imgui',
     '../../common/deps',
-    '../../common/deps/dr',
+    '../../common/deps/decoder',
     '../../common',
     '../../common/mudutils',
-    '../../common/formats',
+    '../../common/player',
     '../../common/deps/stb',
-    '../../common/deps/ibxm',
+    '../../common/deps/decoder/ibxm',
+    '../../common/deps/decoder',
+    '../../common/deps/decoder/opus/celt',
+    '../../common/deps/decoder/opus',
+    '../../common/deps/decoder/opus/silk',
+    '../../common/deps/decoder/opus/libopus',
+    '../../common/deps/decoder/opus/opusfile',
     'src'
   )
 ]

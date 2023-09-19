@@ -12,13 +12,6 @@
 
 
 int window_width,window_height;
-
-void resizeui(int width, int height)
-{
-    window_width=width;
-    window_height=height;
-}
-
 struct FileRecord
         {
             bool                  isDir = false;
@@ -31,6 +24,14 @@ std::filesystem::path pwd_;
 std::string selected_fname;
 std::string format_string;
 int toseekto = 0;
+
+void resizeui(int width, int height)
+{
+    window_width=width;
+    window_height=height;
+}
+
+
 
 std::string format_duration( std::chrono::milliseconds ms ) {
     using namespace std::chrono;
