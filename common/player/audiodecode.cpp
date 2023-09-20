@@ -47,7 +47,7 @@ auddecode *make_decoder(const char* filename)
    {
    replay = auddecode_factory[i].init();
    const char *ext = get_filename_ext(filename);
-   if(strcmp(ext,replay->file_types())==0){
+   if(strstr(ext,replay->file_types())!=0){
    if(!replay->open(filename,&srate,false)){
    delete replay;
    replay=NULL;

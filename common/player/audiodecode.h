@@ -40,6 +40,7 @@ auddecode *create_flac();
 auddecode *create_vorbis();
 auddecode *create_wav();
 auddecode *create_opus();
+auddecode *create_mpc();
 typedef   auddecode* (*create_filetype)();
 static struct auddecode_factory_ {
    create_filetype  init; 
@@ -49,6 +50,7 @@ static struct auddecode_factory_ {
     create_vorbis,
     create_wav,
     create_opus,
+    create_mpc,
     NULL
  };
 
