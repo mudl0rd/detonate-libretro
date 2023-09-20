@@ -10,7 +10,6 @@ class auddecode_mpc : public auddecode
 
 private:
     bool isplaying2;
-
     mpc_reader m_reader;
     mpc_demux * demux;
     FILE *filez;
@@ -19,17 +18,18 @@ private:
 public:
 	~auddecode_mpc() {
         demux= NULL;
+        filez=NULL;
     }
 
     auddecode_mpc()
     {
         isplaying2 = false;
         demux= NULL;
+        filez=NULL;
     }
 
 	bool open(const char* filename ,float * samplerate, bool loop)
     {
-        int err;
         filez=fopen(filename,"rb");
         mpc_reader_init_stdio_stream( &m_reader, filez );
         demux = mpc_demux_init(&m_reader);
@@ -49,14 +49,9 @@ public:
 
 	virtual void seek(unsigned ms)
     {
-        uint64_t index = ms;
+        double index = ms/1000.f;
         if(isplaying2)
-        {
-        index *= sample_r;
-        index /= 1000;
-         mpc_demux_seek_sample(demux,index );
-        }
-       
+        mpc_demux_seek_second(demux, index);
     }
 
     void stop()
@@ -67,7 +62,7 @@ public:
         if(demux)
         {
             mpc_demux_exit( demux );
-	        mpc_reader_exit_stdio( &m_reader );
+	        mpc_reader_exit_stdio(&m_reader );
 	        fclose( filez );
         }
         }
@@ -92,7 +87,7 @@ public:
     }
 
     const char* file_types(){
-         return "mpc|mpp";
+         return "mpc";
     }
 
 
@@ -102,11 +97,12 @@ public:
         unsigned temp_samples=0;
          if(isplaying2){
      again:
+      mpc_status err;
      mpc_frame_info frame = {};
      frame.buffer = temp_buffer;
-      mpc_demux_decode( demux, &frame );
+      err=mpc_demux_decode( demux, &frame );
       temp_samples=frame.samples;
-      if (temp_samples == 0)
+      if (temp_samples == 0 && err != MPC_STATUS_OK)
       {
          if (repeat)
          {
