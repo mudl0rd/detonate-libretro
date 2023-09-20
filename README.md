@@ -9,7 +9,7 @@
 
 ## With?
 
-* Decoding for MP3/FLAC/WAV/Vorbis/Opus/Musepack (more to come)
+* Decoding for MP3/FLAC/WAV/Vorbis/Opus/Musepack/WavPack (more to come)
 * Sample accurate seeking
 * dear-imgui based file browser
 
