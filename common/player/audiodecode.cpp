@@ -119,9 +119,8 @@ void convert_float_to_s16(int16_t *out,
 }
 #endif
 
-bool isplaying=false;
 bool music_isplaying(){
-    return isplaying;
+    return (replayer &&replayer->is_playing());
 }
 
 void music_stop()
@@ -130,8 +129,7 @@ void music_stop()
     {
         replayer->stop();
         delete replayer;
-        replayer = NULL;
-        isplaying=false;      
+        replayer = NULL; 
    #ifndef LIBRETRO  
         audio_destroy();
    #else
@@ -150,7 +148,6 @@ bool music_play(const char* filename)
    #else
    resample = resampler_sinc_init();
    #endif 
-   isplaying=true;
    duration=replayer->song_duration();
    return (replayer != NULL)?true:false;
 }
