@@ -20,6 +20,54 @@ float srate = 0.0;
 uint64_t sample_count = 0;
 unsigned duration = 0;
 
+void conv2float(float * dst, const uint8_t * src, const size_t N, sampfmt f)
+{
+
+    if (f == sampfmt::U8)
+    {
+        const uint8_t * ptr = reinterpret_cast<const uint8_t *>(src);
+        for (size_t i = 0; i < N; ++i)
+            dst[i] = uint8_to_float32(ptr[i]);
+    }
+    else if (f == sampfmt::S8)
+    {
+        const int8_t * ptr = reinterpret_cast<const int8_t *>(src);
+        for (size_t i = 0; i < N; ++i)
+            dst[i] = int8_to_float32(ptr[i]);
+    }
+    else if (f == sampfmt::P16)
+    {
+        const int16_t * ptr = reinterpret_cast<const int16_t *>(src);
+        for (size_t i = 0; i < N; ++i)
+            dst[i] = int16_to_float32(ptr[i]);
+    }
+    else if (f == sampfmt::P24)
+    {
+        const uint8_t * ptr = reinterpret_cast<const uint8_t *>(src);
+        size_t c = 0;
+        for (size_t i = 0; i < N; ++i)
+        {
+            int32_t sample = Pack(ptr[c], ptr[c+1], ptr[c+2]);
+            dst[i] = int24_to_float32(sample);
+            c += 3;
+        }
+    }
+    else if (f == sampfmt::P32)
+    {
+        const int32_t * ptr = reinterpret_cast<const int32_t *>(src);
+        for (size_t i = 0; i < N; ++i)
+            dst[i] = int32_to_float32(ptr[i]);
+    }
+    else if (f == sampfmt::FLT)
+       memcpy(dst, src, N * sizeof(float));
+    else if (f == sampfmt::DBL)
+    {
+        const double * ptr = reinterpret_cast<const double *>(src);
+        for (size_t i = 0; i < N; ++i)
+            dst[i] = (float)ptr[i];
+    }
+}
+
 const char *get_filename_ext(const char *filename)
 {
    const char *dot = strrchr(filename, '.');

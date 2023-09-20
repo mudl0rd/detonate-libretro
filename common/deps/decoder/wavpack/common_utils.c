@@ -11,7 +11,7 @@
 // This module provides a lot of the trivial WavPack API functions and several
 // functions that are common to both reading and writing WavPack files (like
 // WavpackCloseFile()). Functions here are restricted to those that have few
-// external dependancies and this is done so that applications that statically
+// external dependencies and this is done so that applications that statically
 // link to the WavPack library (like the command-line utilities on Windows)
 // do not need to include the entire library image if they only use a subset
 // of it. This module will be loaded for ANY WavPack application.
@@ -40,7 +40,7 @@ const uint32_t sample_rates [] = { 6000, 8000, 9600, 11025, 12000, 16000, 22050,
 // MODE_LOSSLESS:  file is lossless (either pure or hybrid)
 // MODE_HYBRID:  file is hybrid mode (either lossy or lossless)
 // MODE_FLOAT:  audio data is 32-bit ieee floating point
-// MODE_VALID_TAG:  file conatins a valid ID3v1 or APEv2 tag
+// MODE_VALID_TAG:  file contains a valid ID3v1 or APEv2 tag
 // MODE_HIGH:  file was created in "high" mode (information only)
 // MODE_FAST:  file was created in "fast" mode (information only)
 // MODE_EXTRA:  file was created using "extra" mode (information only)
@@ -115,7 +115,7 @@ int WavpackGetMode (WavpackContext *wpc)
 // and DSD files. Except for indicating the presence of DSD data, these
 // bits are meant to simply indicate the format of the data in the original
 // source file and do NOT indicate how the library will return the data to
-// the appication (which is always the same). This means that in general an
+// the application (which is always the same). This means that in general an
 // application that simply wants to play or process the audio data need not
 // be concerned about these. If the file is DSD audio, then either of the
 // QMDOE_DSD_LSB_FIRST or QMODE_DSD_MSB_FIRST bits will be set (but the
@@ -241,7 +241,7 @@ double WavpackGetRatio (WavpackContext *wpc)
 
 double WavpackGetAverageBitrate (WavpackContext *wpc, int count_wvc)
 {
-    if (wpc && wpc->total_samples != -1 && wpc->filelen) {
+    if (wpc && wpc->total_samples != -1 && wpc->filelen && WavpackGetSampleRate (wpc)) {
         double output_time = (double) wpc->total_samples / WavpackGetSampleRate (wpc);
         double input_size = (double) wpc->filelen + (count_wvc ? wpc->file2len : 0);
 
@@ -262,7 +262,7 @@ double WavpackGetInstantBitrate (WavpackContext *wpc)
     if (wpc && wpc->stream3)
         return WavpackGetAverageBitrate (wpc, TRUE);
 
-    if (wpc && wpc->streams && wpc->streams [0] && wpc->streams [0]->wphdr.block_samples) {
+    if (wpc && wpc->streams && wpc->streams [0] && wpc->streams [0]->wphdr.block_samples && WavpackGetSampleRate (wpc)) {
         double output_time = (double) wpc->streams [0]->wphdr.block_samples / WavpackGetSampleRate (wpc);
         double input_size = 0;
         int si;
@@ -311,7 +311,7 @@ uint32_t WavpackGetChannelLayout (WavpackContext *wpc, unsigned char *reorder)
 // This function provides the identities of ALL the channels in the file, including the
 // standard Microsoft channels (which come first, in order, and are numbered 1-18) and also
 // any non-Microsoft channels (which can be in any order and have values from 33-254). The
-// value 0x00 is invalid and 0xFF indicates an "unknown" or "unnassigned" channel. The
+// value 0x00 is invalid and 0xFF indicates an "unknown" or "unassigned" channel. The
 // string is NULL terminated so the caller must supply enough space for the number
 // of channels indicated by WavpackGetNumChannels(), plus one.
 //
@@ -345,6 +345,31 @@ void WavpackGetChannelIdentities (WavpackContext *wpc, unsigned char *identities
 
     *identities = 0;
 }
+
+#ifdef ENABLE_THREADS
+
+static void worker_threads_destroy (WavpackContext *wpc)
+{
+    if (wpc->workers) {
+        int i;
+
+        for (i = 0; i < wpc->num_workers; ++i) {
+            wp_mutex_obtain (wpc->mutex);
+            wpc->workers [i].state = Quit;
+            wp_condvar_signal (wpc->workers [i].worker_cond);
+            wp_mutex_release (wpc->mutex);
+            wp_thread_join (wpc->workers [i].thread);
+            wp_thread_delete (wpc->workers [i].thread);
+            wp_condvar_delete (wpc->workers [i].worker_cond);
+        }
+
+        free (wpc->workers);
+        wpc->workers = NULL;
+        wp_mutex_delete (wpc->mutex);
+    }
+}
+
+#endif
 
 // For local use only. Install a callback to be executed when WavpackCloseFile() is called,
 // usually used to dump some statistics accumulated during encode or decode.
@@ -384,6 +409,19 @@ WavpackContext *WavpackCloseFile (WavpackContext *wpc)
 
     WavpackFreeWrapper (wpc);
 
+    if (wpc->metadata) {
+        int i;
+
+        for (i = 0; i < wpc->metacount; ++i)
+            if (wpc->metadata [i].data)
+                free (wpc->metadata [i].data);
+
+        free (wpc->metadata);
+    }
+
+    if (wpc->channel_identities)
+        free (wpc->channel_identities);
+
     if (wpc->channel_reordering)
         free (wpc->channel_reordering);
 
@@ -394,6 +432,10 @@ WavpackContext *WavpackCloseFile (WavpackContext *wpc)
 #ifdef ENABLE_DSD
     if (wpc->decimation_context)
         decimate_dsd_destroy (wpc->decimation_context);
+#endif
+
+#ifdef ENABLE_THREADS
+    worker_threads_destroy (wpc);
 #endif
 
     free (wpc);
@@ -462,11 +504,13 @@ int WavpackGetChannelMask (WavpackContext *wpc)
 // Return the normalization value for floating point data (valid only
 // if floating point data is present). A value of 127 indicates that
 // the floating point range is +/- 1.0. Higher values indicate a
-// larger floating point range.
+// larger floating point range. Note that if the client specified
+// OPEN_NORMALIZE we return the normalized value (i.e., 127 + offset)
+// rather than what's in the file (which isn't really relevant).
 
 int WavpackGetFloatNormExp (WavpackContext *wpc)
 {
-    return wpc->config.float_norm_exp;
+    return (wpc->open_flags & OPEN_NORMALIZE) ? 127 + wpc->norm_offset : wpc->config.float_norm_exp;
 }
 
 // Returns the actual number of valid bits per sample contained in the
@@ -507,7 +551,7 @@ int WavpackGetReducedChannels (WavpackContext *wpc)
 }
 
 // Free all memory allocated for raw WavPack blocks (for all allocated streams)
-// and free all additonal streams. This does not free the default stream ([0])
+// and free all additional streams. This does not free the default stream ([0])
 // which is always kept around.
 
 void free_streams (WavpackContext *wpc)
@@ -515,53 +559,7 @@ void free_streams (WavpackContext *wpc)
     int si = wpc->num_streams;
 
     while (si--) {
-        if (wpc->streams [si]->blockbuff) {
-            free (wpc->streams [si]->blockbuff);
-            wpc->streams [si]->blockbuff = NULL;
-        }
-
-        if (wpc->streams [si]->block2buff) {
-            free (wpc->streams [si]->block2buff);
-            wpc->streams [si]->block2buff = NULL;
-        }
-
-        if (wpc->streams [si]->sample_buffer) {
-            free (wpc->streams [si]->sample_buffer);
-            wpc->streams [si]->sample_buffer = NULL;
-        }
-
-        if (wpc->streams [si]->dc.shaping_data) {
-            free (wpc->streams [si]->dc.shaping_data);
-            wpc->streams [si]->dc.shaping_data = NULL;
-        }
-
-#ifdef ENABLE_DSD
-        if (wpc->streams [si]->dsd.probabilities) {
-            free (wpc->streams [si]->dsd.probabilities);
-            wpc->streams [si]->dsd.probabilities = NULL;
-        }
-
-        if (wpc->streams [si]->dsd.summed_probabilities) {
-            free (wpc->streams [si]->dsd.summed_probabilities);
-            wpc->streams [si]->dsd.summed_probabilities = NULL;
-        }
-
-        if (wpc->streams [si]->dsd.value_lookup) {
-            int i;
-
-            for (i = 0; i < wpc->streams [si]->dsd.history_bins; ++i)
-                if (wpc->streams [si]->dsd.value_lookup [i])
-                    free (wpc->streams [si]->dsd.value_lookup [i]);
-
-            free (wpc->streams [si]->dsd.value_lookup);
-            wpc->streams [si]->dsd.value_lookup = NULL;
-        }
-
-        if (wpc->streams [si]->dsd.ptable) {
-            free (wpc->streams [si]->dsd.ptable);
-            wpc->streams [si]->dsd.ptable = NULL;
-        }
-#endif
+        free_single_stream (wpc->streams [si]);
 
         if (si) {
             wpc->num_streams--;
@@ -569,8 +567,70 @@ void free_streams (WavpackContext *wpc)
             wpc->streams [si] = NULL;
         }
     }
+}
 
-    wpc->current_stream = 0;
+// Free all resources associated with the specified stream
+
+void free_single_stream (WavpackStream *wps)
+{
+    if (wps->blockbuff) {
+        free (wps->blockbuff);
+        wps->blockbuff = NULL;
+    }
+
+    if (wps->block2buff) {
+        free (wps->block2buff);
+        wps->block2buff = NULL;
+    }
+
+    if (wps->sample_buffer) {
+        free (wps->sample_buffer);
+        wps->sample_buffer = NULL;
+    }
+
+    if (wps->pre_sample_buffer) {
+        free (wps->pre_sample_buffer);
+        wps->sample_buffer = NULL;
+    }
+
+    if (wps->dc.shaping_data) {
+        free (wps->dc.shaping_data);
+        wps->dc.shaping_data = NULL;
+    }
+
+#ifdef ENABLE_DSD
+    free_dsd_tables (wps);
+#endif
+}
+
+// Free all DSD-related resources associated with the specified stream
+
+void free_dsd_tables (WavpackStream *wps)
+{
+    if (wps->dsd.probabilities) {
+        free (wps->dsd.probabilities);
+        wps->dsd.probabilities = NULL;
+    }
+
+    if (wps->dsd.summed_probabilities) {
+        free (wps->dsd.summed_probabilities);
+        wps->dsd.summed_probabilities = NULL;
+    }
+
+    if (wps->dsd.lookup_buffer) {
+        free (wps->dsd.lookup_buffer);
+        wps->dsd.lookup_buffer = NULL;
+    }
+
+    if (wps->dsd.value_lookup) {
+        free (wps->dsd.value_lookup);
+        wps->dsd.value_lookup = NULL;
+    }
+
+    if (wps->dsd.ptable) {
+        free (wps->dsd.ptable);
+        wps->dsd.ptable = NULL;
+    }
 }
 
 void WavpackFloatNormalize (int32_t *values, int32_t num_values, int delta_exp)
@@ -598,26 +658,28 @@ void WavpackFloatNormalize (int32_t *values, int32_t num_values, int delta_exp)
 void WavpackLittleEndianToNative (void *data, char *format)
 {
     unsigned char *cp = (unsigned char *) data;
-    int64_t temp;
+    int64_t temp64;
+    int32_t temp32;
+    int16_t temp16;
 
     while (*format) {
         switch (*format) {
             case 'D':
-                temp = cp [0] + ((int64_t) cp [1] << 8) + ((int64_t) cp [2] << 16) + ((int64_t) cp [3] << 24) +
-                    ((int64_t) cp [4] << 32) + ((int64_t) cp [5] << 40) + ((int64_t) cp [6] << 48) + ((int64_t) cp [7] << 56);
-                * (int64_t *) cp = temp;
+                temp64 = cp [0] + ((int64_t) cp [1] << 8) + ((int64_t) cp [2] << 16) + ((int64_t) cp [3] << 24) +
+                    ((int64_t) cp [4] << 32) + ((int64_t) cp [5] << 40) + ((int64_t) cp [6] << 48) + ((uint64_t) cp [7] << 56);
+                memcpy (cp, &temp64, 8);
                 cp += 8;
                 break;
 
             case 'L':
-                temp = cp [0] + ((int32_t) cp [1] << 8) + ((int32_t) cp [2] << 16) + ((int32_t) cp [3] << 24);
-                * (int32_t *) cp = (int32_t) temp;
+                temp32 = cp [0] + ((int32_t) cp [1] << 8) + ((int32_t) cp [2] << 16) + ((int64_t) cp [3] << 24);
+                memcpy (cp, &temp32, 4);
                 cp += 4;
                 break;
 
             case 'S':
-                temp = cp [0] + (cp [1] << 8);
-                * (int16_t *) cp = (int16_t) temp;
+                temp16 = cp [0] + (cp [1] << 8);
+                memcpy (cp, &temp16, 2);
                 cp += 2;
                 break;
 
@@ -635,34 +697,36 @@ void WavpackLittleEndianToNative (void *data, char *format)
 void WavpackNativeToLittleEndian (void *data, char *format)
 {
     unsigned char *cp = (unsigned char *) data;
-    int64_t temp;
+    int64_t temp64;
+    int32_t temp32;
+    int16_t temp16;
 
     while (*format) {
         switch (*format) {
             case 'D':
-                temp = * (int64_t *) cp;
-                *cp++ = (unsigned char) temp;
-                *cp++ = (unsigned char) (temp >> 8);
-                *cp++ = (unsigned char) (temp >> 16);
-                *cp++ = (unsigned char) (temp >> 24);
-                *cp++ = (unsigned char) (temp >> 32);
-                *cp++ = (unsigned char) (temp >> 40);
-                *cp++ = (unsigned char) (temp >> 48);
-                *cp++ = (unsigned char) (temp >> 56);
+                memcpy (&temp64, cp, sizeof (temp64));
+                *cp++ = (unsigned char) temp64;
+                *cp++ = (unsigned char) (temp64 >> 8);
+                *cp++ = (unsigned char) (temp64 >> 16);
+                *cp++ = (unsigned char) (temp64 >> 24);
+                *cp++ = (unsigned char) (temp64 >> 32);
+                *cp++ = (unsigned char) (temp64 >> 40);
+                *cp++ = (unsigned char) (temp64 >> 48);
+                *cp++ = (unsigned char) (temp64 >> 56);
                 break;
 
             case 'L':
-                temp = * (int32_t *) cp;
-                *cp++ = (unsigned char) temp;
-                *cp++ = (unsigned char) (temp >> 8);
-                *cp++ = (unsigned char) (temp >> 16);
-                *cp++ = (unsigned char) (temp >> 24);
+                memcpy (&temp32, cp, sizeof (temp32));
+                *cp++ = (unsigned char) temp32;
+                *cp++ = (unsigned char) (temp32 >> 8);
+                *cp++ = (unsigned char) (temp32 >> 16);
+                *cp++ = (unsigned char) (temp32 >> 24);
                 break;
 
             case 'S':
-                temp = * (int16_t *) cp;
-                *cp++ = (unsigned char) temp;
-                *cp++ = (unsigned char) (temp >> 8);
+                memcpy (&temp16, cp, sizeof (temp16));
+                *cp++ = (unsigned char) temp16;
+                *cp++ = (unsigned char) (temp16 >> 8);
                 break;
 
             default:
@@ -679,26 +743,28 @@ void WavpackNativeToLittleEndian (void *data, char *format)
 void WavpackBigEndianToNative (void *data, char *format)
 {
     unsigned char *cp = (unsigned char *) data;
-    int64_t temp;
+    int64_t temp64;
+    int32_t temp32;
+    int16_t temp16;
 
     while (*format) {
         switch (*format) {
             case 'D':
-                temp = cp [7] + ((int64_t) cp [6] << 8) + ((int64_t) cp [5] << 16) + ((int64_t) cp [4] << 24) +
-                    ((int64_t) cp [3] << 32) + ((int64_t) cp [2] << 40) + ((int64_t) cp [1] << 48) + ((int64_t) cp [0] << 56);
-                * (int64_t *) cp = temp;
+                temp64 = cp [7] + ((int64_t) cp [6] << 8) + ((int64_t) cp [5] << 16) + ((int64_t) cp [4] << 24) +
+                    ((int64_t) cp [3] << 32) + ((int64_t) cp [2] << 40) + ((int64_t) cp [1] << 48) + ((uint64_t) cp [0] << 56);
+                memcpy (cp, &temp64, 8);
                 cp += 8;
                 break;
 
             case 'L':
-                temp = cp [3] + ((int32_t) cp [2] << 8) + ((int32_t) cp [1] << 16) + ((int32_t) cp [0] << 24);
-                * (int32_t *) cp = (int32_t) temp;
+                temp32 = cp [3] + ((int32_t) cp [2] << 8) + ((int32_t) cp [1] << 16) + ((int64_t) cp [0] << 24);
+                memcpy (cp, &temp32, 4);
                 cp += 4;
                 break;
 
             case 'S':
-                temp = cp [1] + (cp [0] << 8);
-                * (int16_t *) cp = (int16_t) temp;
+                temp16 = cp [1] + (cp [0] << 8);
+                memcpy (cp, &temp16, 2);
                 cp += 2;
                 break;
 
@@ -716,34 +782,36 @@ void WavpackBigEndianToNative (void *data, char *format)
 void WavpackNativeToBigEndian (void *data, char *format)
 {
     unsigned char *cp = (unsigned char *) data;
-    int64_t temp;
+    int64_t temp64;
+    int32_t temp32;
+    int16_t temp16;
 
     while (*format) {
         switch (*format) {
             case 'D':
-                temp = * (int64_t *) cp;
-                *cp++ = (unsigned char) (temp >> 56);
-                *cp++ = (unsigned char) (temp >> 48);
-                *cp++ = (unsigned char) (temp >> 40);
-                *cp++ = (unsigned char) (temp >> 32);
-                *cp++ = (unsigned char) (temp >> 24);
-                *cp++ = (unsigned char) (temp >> 16);
-                *cp++ = (unsigned char) (temp >> 8);
-                *cp++ = (unsigned char) temp;
+                memcpy (&temp64, cp, sizeof (temp64));
+                *cp++ = (unsigned char) (temp64 >> 56);
+                *cp++ = (unsigned char) (temp64 >> 48);
+                *cp++ = (unsigned char) (temp64 >> 40);
+                *cp++ = (unsigned char) (temp64 >> 32);
+                *cp++ = (unsigned char) (temp64 >> 24);
+                *cp++ = (unsigned char) (temp64 >> 16);
+                *cp++ = (unsigned char) (temp64 >> 8);
+                *cp++ = (unsigned char) temp64;
                 break;
 
             case 'L':
-                temp = * (int32_t *) cp;
-                *cp++ = (unsigned char) (temp >> 24);
-                *cp++ = (unsigned char) (temp >> 16);
-                *cp++ = (unsigned char) (temp >> 8);
-                *cp++ = (unsigned char) temp;
+                memcpy (&temp32, cp, sizeof (temp32));
+                *cp++ = (unsigned char) (temp32 >> 24);
+                *cp++ = (unsigned char) (temp32 >> 16);
+                *cp++ = (unsigned char) (temp32 >> 8);
+                *cp++ = (unsigned char) temp32;
                 break;
 
             case 'S':
-                temp = * (int16_t *) cp;
-                *cp++ = (unsigned char) (temp >> 8);
-                *cp++ = (unsigned char) temp;
+                memcpy (&temp16, cp, sizeof (temp16));
+                *cp++ = (unsigned char) (temp16 >> 8);
+                *cp++ = (unsigned char) temp16;
                 break;
 
             default:

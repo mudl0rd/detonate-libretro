@@ -17,10 +17,12 @@
 
 #include "wavpack_local.h"
 
+#ifndef __WATCOMC__
 #ifdef _WIN32
 #define stricmp(x,y) _stricmp(x,y)
 #else
 #define stricmp strcasecmp
+#endif
 #endif
 
 static int get_ape_tag_item (M_Tag *m_tag, const char *item, char *value, int size, int type);
@@ -186,11 +188,11 @@ int WavpackDeleteTagItem (WavpackContext *wpc, const char *item)
         unsigned char *q = p + m_tag->ape_tag_hdr.length - sizeof (APE_Tag_Hdr);
         int i;
 
-        for (i = 0; i < m_tag->ape_tag_hdr.item_count; ++i) {
+        for (i = 0; i < m_tag->ape_tag_hdr.item_count && q - p > 8; ++i) {
             int vsize, isize;
 
-            vsize = p[0] + (p[1] << 8) + (p[2] << 16) + (p[3] << 24); p += 8;   // skip flags because we don't need them
-            for (isize = 0; p[isize] && p + isize < q; ++isize);
+            vsize = p[0] + (p[1] << 8) + (p[2] << 16) + ((uint32_t) p[3] << 24); p += 8;   // skip flags because we don't need them
+            for (isize = 0; p + isize < q && p[isize]; ++isize);
 
             if (vsize < 0 || vsize > m_tag->ape_tag_hdr.length || p + isize + vsize + 1 > q)
                 break;
@@ -240,9 +242,9 @@ static int get_ape_tag_item (M_Tag *m_tag, const char *item, char *value, int si
     for (i = 0; i < m_tag->ape_tag_hdr.item_count && q - p > 8; ++i) {
         int vsize, flags, isize;
 
-        vsize = p[0] + (p[1] << 8) + (p[2] << 16) + (p[3] << 24); p += 4;
-        flags = p[0] + (p[1] << 8) + (p[2] << 16) + (p[3] << 24); p += 4;
-        for (isize = 0; p[isize] && p + isize < q; ++isize);
+        vsize = p[0] + (p[1] << 8) + (p[2] << 16) + ((uint32_t) p[3] << 24); p += 4;
+        flags = p[0] + (p[1] << 8) + (p[2] << 16) + ((uint32_t) p[3] << 24); p += 4;
+        for (isize = 0; p + isize < q && p[isize]; ++isize);
 
         if (vsize < 0 || vsize > m_tag->ape_tag_hdr.length || p + isize + vsize + 1 > q)
             break;
@@ -331,9 +333,9 @@ static int get_ape_tag_item_indexed (M_Tag *m_tag, int index, char *item, int si
     for (i = 0; i < m_tag->ape_tag_hdr.item_count && index >= 0 && q - p > 8; ++i) {
         int vsize, flags, isize;
 
-        vsize = p[0] + (p[1] << 8) + (p[2] << 16) + (p[3] << 24); p += 4;
-        flags = p[0] + (p[1] << 8) + (p[2] << 16) + (p[3] << 24); p += 4;
-        for (isize = 0; p[isize] && p + isize < q; ++isize);
+        vsize = p[0] + (p[1] << 8) + (p[2] << 16) + ((uint32_t) p[3] << 24); p += 4;
+        flags = p[0] + (p[1] << 8) + (p[2] << 16) + ((uint32_t) p[3] << 24); p += 4;
+        for (isize = 0; p + isize < q && p[isize]; ++isize);
 
         if (vsize < 0 || vsize > m_tag->ape_tag_hdr.length || p + isize + vsize + 1 > q)
             break;
@@ -411,7 +413,7 @@ static int append_ape_tag_item (WavpackContext *wpc, const char *item, const cha
     int isize = (int) strlen (item);
 
     if (!m_tag->ape_tag_hdr.ID [0]) {
-        strncpy (m_tag->ape_tag_hdr.ID, "APETAGEX", sizeof (m_tag->ape_tag_hdr.ID));
+        memcpy (m_tag->ape_tag_hdr.ID, "APETAGEX", sizeof (m_tag->ape_tag_hdr.ID));
         m_tag->ape_tag_hdr.version = 2000;
         m_tag->ape_tag_hdr.length = sizeof (m_tag->ape_tag_hdr);
         m_tag->ape_tag_hdr.item_count = 0;
@@ -523,7 +525,7 @@ static int write_tag_reader (WavpackContext *wpc)
 
     if (result && tag_size < -m_tag->tag_file_pos && !wpc->reader->truncate_here) {
         int nullcnt = (int) (-m_tag->tag_file_pos - tag_size);
-        char zero [1] = { 0 };
+        char zero = 0;
 
         while (nullcnt--)
             wpc->reader->write_bytes (wpc->wv_in, &zero, 1);

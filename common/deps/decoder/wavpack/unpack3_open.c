@@ -11,7 +11,7 @@
 // This module provides an extension to the open_utils.c module for handling
 // WavPack files prior to version 4.0, not including "raw" files. As these
 // modes are all obsolete and are no longer written, this code will not be
-// fully documented other than the global functions. However, full documenation
+// fully documented other than the global functions. However, full documentation
 // is provided in the version 3.97 source code. Note that this module only
 // provides the functionality of opening the files and obtaining information
 // from them; the actual audio decoding is located in the unpack3.c module.
@@ -158,11 +158,11 @@ WavpackContext *open_file3 (WavpackContext *wpc, char *error)
         return WavpackCloseFile (wpc);
     }
 
-    if (((char *) &wphdr) [8] == 2 && (wpc->reader->read_bytes (wpc->wv_in, ((char *) &wphdr) + 10, 2) != 2)) {
+    if (*(char *) &wphdr.version == 2 && (wpc->reader->read_bytes (wpc->wv_in, ((char *) &wphdr) + 10, 2) != 2)) {
         if (error) strcpy (error, "not a valid WavPack file!");
         return WavpackCloseFile (wpc);
     }
-    else if (((char *) &wphdr) [8] == 3 && (wpc->reader->read_bytes (wpc->wv_in, ((char *) &wphdr) + 10,
+    else if (*(char *) &wphdr.version == 3 && (wpc->reader->read_bytes (wpc->wv_in, ((char *) &wphdr) + 10,
         sizeof (wphdr) - 10) != sizeof (wphdr) - 10)) {
             if (error) strcpy (error, "not a valid WavPack file!");
             return WavpackCloseFile (wpc);

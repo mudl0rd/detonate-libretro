@@ -13,6 +13,38 @@ uint32_t music_getduration();
 uint32_t music_getposition();
 uint32_t music_setposition(uint64_t pos);
 
+enum sampfmt
+{
+    U8,
+    S8,
+    P16,
+    P24,
+    P32,
+    P64,
+    FLT,
+    DBL,
+    END
+};
+
+
+inline int32_t Pack(uint8_t a, uint8_t b, uint8_t c)
+{
+    // uint32_t tmp = ((c & 0x80) ? (0xFF << 24) : 0x00 << 24) | (c << 16) | (b << 8) | (a << 0); // alternate method
+    int32_t x = (c << 16) | (b << 8) | (a << 0);
+    auto sign_extended = (x) | (!!((x) & 0x800000) * 0xff000000);
+    return sign_extended;
+}
+
+#define R_INT16_MAX 32767.f
+#define R_INT24_MAX 8388608.f
+#define R_INT32_MAX 2147483648.f
+static const float R_BYTE_2_FLT = 1.0f / 127.0f;
+#define int8_to_float32(s)  ((float) (s) * R_BYTE_2_FLT)
+#define uint8_to_float32(s)(((float) (s) - 128) * R_BYTE_2_FLT)
+#define int16_to_float32(s) ((float) (s) / R_INT16_MAX)
+#define int24_to_float32(s) ((float) (s) / R_INT24_MAX)
+#define int32_to_float32(s) ((float) (s) / R_INT32_MAX)
+
 class auddecode
 {
 public:
@@ -41,6 +73,7 @@ auddecode *create_vorbis();
 auddecode *create_wav();
 auddecode *create_opus();
 auddecode *create_mpc();
+auddecode *create_wv();
 typedef   auddecode* (*create_filetype)();
 static struct auddecode_factory_ {
    create_filetype  init; 
@@ -51,6 +84,7 @@ static struct auddecode_factory_ {
     create_wav,
     create_opus,
     create_mpc,
+    create_wv,
     NULL
  };
 
