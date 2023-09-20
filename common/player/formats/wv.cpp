@@ -124,7 +124,7 @@ public:
         else
         {
         temp_samples = WavpackUnpackSamples (wpc, temp_bufferint, NUM_FRAMES);
-        convintfloatwv(temp_buffer,temp_bufferint, NUM_FRAMES,bits);
+        convintfloatwv(temp_buffer,temp_bufferint, NUM_FRAMES*2,bits);
         }
       if (temp_samples == 0)
       {
