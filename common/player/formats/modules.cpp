@@ -79,13 +79,14 @@ public:
          if(isplaying2){
      again:
          status=m4p_GenerateSamples(temp_bufferint,NUM_FRAMES);
+         if (status=0)
+         {
+         isplaying2=false;
+         return;
+         }
          conv2float(temp_buffer,(uint8_t*)temp_bufferint, NUM_FRAMES*2,sampfmt::P16);
          temp_samples=NUM_FRAMES;
         }
-      if (status=0)
-      {
-         isplaying2=false;
-      }
       buffer_samps = temp_buffer;
       count = temp_samples;
     }

@@ -90,9 +90,9 @@ void m4p_PlaySong(void)
 int m4p_GenerateSamples(int16_t *buffer, int32_t numSamples)
 {
 	if (current_format == FORMAT_IT_S3M)
-		Music_FillAudioBuffer(buffer, numSamples);
+		return Music_FillAudioBuffer(buffer, numSamples);
 	else
-		mix_UpdateBuffer(buffer, numSamples);
+		return mix_UpdateBuffer(buffer, numSamples);
 }
 
 void m4p_Stop(void)

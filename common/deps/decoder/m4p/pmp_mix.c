@@ -256,6 +256,9 @@ int mix_UpdateBuffer(int16_t *buffer, int32_t numSamples)
 		return 0;
 	}
 
+
+	
+
 	memset(CDA_MixBuffer, 0, numSamples * (2 * sizeof (int32_t)));
 
 	int32_t c = 0;
@@ -310,6 +313,9 @@ int mix_UpdateBuffer(int16_t *buffer, int32_t numSamples)
 			buffer[i] = (int16_t)out32;
 		}
 	}
+
+	if (!song.timer)
+	return 0;
 
 	return 1;
 }
