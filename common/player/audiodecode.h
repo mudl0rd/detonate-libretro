@@ -13,6 +13,7 @@ uint32_t music_getduration();
 uint32_t music_getposition();
 uint32_t music_setposition(uint64_t pos);
 
+
 enum sampfmt
 {
     U8,
@@ -25,6 +26,7 @@ enum sampfmt
     DBL,
     END
 };
+void conv2float(float * dst, const uint8_t * src, const size_t N, sampfmt f);
 
 
 inline int32_t Pack(uint8_t a, uint8_t b, uint8_t c)
@@ -74,6 +76,7 @@ auddecode *create_wav();
 auddecode *create_opus();
 auddecode *create_mpc();
 auddecode *create_wv();
+auddecode *create_modules();
 typedef   auddecode* (*create_filetype)();
 static struct auddecode_factory_ {
    create_filetype  init; 
@@ -85,6 +88,7 @@ static struct auddecode_factory_ {
     create_opus,
     create_mpc,
     create_wv,
+    create_modules,
     NULL
  };
 

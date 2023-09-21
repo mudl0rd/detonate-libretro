@@ -114,7 +114,8 @@
 			"xtree": "cpp",
 			"xutility": "cpp",
 			"coroutine": "cpp",
-			"huffman.h": "c"
+			"huffman.h": "c",
+			"m4p.h": "c"
 		}
 	}
 }

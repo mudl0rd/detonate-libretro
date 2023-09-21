@@ -12,8 +12,7 @@ srcdirs = [
     '../common/deps/imgui',
     '../common/mudutils',
     '../common/player',
-    'src',
-    '../common/deps/decoder/ibxm'
+    'src'
 ]
 foreach srcitem : srcdirs
   glob = run_command('python3', 'src_batch.py',srcitem)
@@ -28,7 +27,6 @@ inc = [
     '../../common/mudutils',
     '../../common/player',
     '../../common/deps/stb',
-    '../../common/deps/decoder/ibxm',
     '../../common/deps/decoder',
     '../../common/deps/decoder/opus/celt',
     '../../common/deps/decoder/opus',
