@@ -9,7 +9,8 @@
 
 ## With?
 
-* Decoding for MP3/FLAC/WAV/Vorbis/Opus/Musepack/WavPack (more to come)
+* MP3/FLAC/WAV/Vorbis/Opus/Musepack/WavPack decoding
+* Tracker module (XM/S3M/IT/MOD) playback
 * Sample accurate seeking
 * dear-imgui based file browser
 
