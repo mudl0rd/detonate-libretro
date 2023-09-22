@@ -10,7 +10,6 @@ src = []
 #]*/
 srcdirs = [
     '../common/deps/imgui',
-    '../common/deps/decoder/m4a',
     '../common/mudutils',
     '../common/player',
     'src'
@@ -48,6 +47,9 @@ sdl2dep = dependency('sdl2',
   static: true,
   method: 'pkg-config')
 endif
+
+fdkaac_dep = dependency('fdk-aac', required : true,static:true)
+
 if host_machine.system() == 'linux'
     dl_dep = meson.get_compiler('cpp').find_library('dl', required: true)
 else
@@ -68,5 +70,5 @@ common_ldflags,
 language: [ 'c', 'cpp' ],)
 dir_base = meson.current_source_dir()
 dir_install = join_paths(dir_base, 'compile_dir')
-executable('detonate',install: true, gui_app:build_gui,install_dir: dir_install,include_directories : [inc],sources : [src],dependencies : [sdl2dep,dl_dep]
+executable('detonate',install: true, gui_app:build_gui,install_dir: dir_install,include_directories : [inc],sources : [src],dependencies : [sdl2dep,fdkaac_dep,dl_dep]
 )

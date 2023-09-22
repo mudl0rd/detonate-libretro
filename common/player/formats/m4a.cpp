@@ -1,11 +1,10 @@
 #include "audiodecode.h"
 #define MINIMP4_IMPLEMENTATION
-#define AAC_ENABLE_SBR
 #include "minimp4.h"
-#include "m4a/neaacdec.h"
+#include <fdk-aac/aacdecoder_lib.h>
 #include "mudutils/utils.h"
 
-#define NUM_FRAMES 1024
+#define NUM_FRAMES 2048
 
 typedef struct
 {
@@ -26,8 +25,7 @@ class auddecode_m4a : public auddecode
 private:
     bool isplaying2;
     MP4D_demux_t demux;
-    NeAACDecHandle hDecoder;
-  
+    HANDLE_AACDECODER dec;
     bool repeat;
     uint64_t sample_cnt;
     float snglength;
@@ -59,16 +57,12 @@ public:
         if (!MP4D_open(&demux, read_callback, &buf, m4a_data.size()))
             return false;
         sample_cnt = 0;
-
-
-        hDecoder = NeAACDecOpen();
-        NeAACDecConfigurationPtr conf = NeAACDecGetCurrentConfiguration(hDecoder);
-        conf->outputFormat = FAAD_FMT_FLOAT; /* irrelevant, we don't convert */
-        conf->downMatrix = 1;
-        NeAACDecSetConfiguration(hDecoder, conf);
-        int err =  NeAACDecInit2(hDecoder,demux.track[0].dsi,demux.track[0].dsi_bytes,&srate,&nch);
-    if (err) 
-        return false;
+        dec = aacDecoder_Open(TT_MP4_RAW, 1);
+        UCHAR *dsi = (UCHAR *)demux.track[0].dsi;
+        UINT dsi_size = demux.track[0].dsi_bytes;
+        if (AAC_DEC_OK != aacDecoder_ConfigRaw(dec, &dsi, &dsi_size))return false;
+        srate=demux.track[0].SampleDescription.audio.samplerate_hz;
+        nch=demux.track[0].SampleDescription.audio.channelcount;
         m4a_ptr=m4a_data.data();
         double timescale_rcp = 1.0 / double(demux.track[0].timescale);
         uint64_t duration =  (uint64_t)demux.track[0].duration_hi << 32 | demux.track[0].duration_lo;
@@ -92,7 +86,7 @@ public:
         if (isplaying2)
         {
             isplaying2 = false;
-            NeAACDecClose(hDecoder);
+            aacDecoder_Close(dec);
             MP4D_close(&demux);
         }
     }
@@ -121,26 +115,42 @@ public:
     void mix(float *&buffer_samps, unsigned &count)
     {
         float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = {0};
+        int16_t temp_bufferint[NUM_FRAMES * 4 * sizeof(int32_t)] = {0};
         unsigned temp_samples = 0;
 
         if (isplaying2)
         {
             if (demux.track[0].handler_type == MP4D_HANDLER_TYPE_SOUN)
             {
-
-                while(temp_samples != NUM_FRAMES)
+                again:
                 if (sample_cnt < demux.track[0].sample_count)
                 {
+                    CStreamInfo* info;
                     unsigned frame_bytes, timestamp, duration;
                     MP4D_file_offset_t ofs = MP4D_frame_offset(&demux, 0, sample_cnt++, &frame_bytes, &timestamp, &duration);
-                    NeAACDecFrameInfo frame_info;
-                    void *samples = NeAACDecDecode(hDecoder, &frame_info,m4a_ptr+ofs,frame_bytes);
-                    if(frame_info.samples && frame_info.error == 0)
+                    UCHAR *frame = (UCHAR *)(m4a_ptr + ofs);
+                    UINT frame_size = frame_bytes;
+                    UINT valid = frame_size;
+                    AAC_DECODER_ERROR aac_err=aacDecoder_Fill(dec, &frame, &frame_size, &valid);
+                    if(aac_err != AAC_DEC_OK)
+                    goto bail;
+                    aac_err = aacDecoder_DecodeFrame(dec,temp_bufferint, sizeof(temp_bufferint), 0);
+                    if(aac_err != AAC_DEC_OK)
+                    goto bail;
+                    info = aacDecoder_GetStreamInfo(dec);
+                    if(info->frameSize)
                     {
-                        temp_samples=frame_info.samples/2;
-                        memcpy(temp_buffer,samples,frame_info.samples*sizeof(float));
-                        break;
-                    }     
+                       conv2float(temp_buffer, (uint8_t *)temp_bufferint, NUM_FRAMES * 2, sampfmt::P16);
+                       temp_samples=info->frameSize;
+                    }    
+                 }
+                else{
+                if (repeat){
+                    sample_cnt=0;
+                    goto again;
+                }
+                bail:
+                isplaying2 = false;
                  }
             }
         }

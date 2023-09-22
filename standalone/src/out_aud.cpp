@@ -229,9 +229,7 @@ bool audio_init(float refreshra, float input_srate, float fps,bool fp)
     }
     audio_ctx_s.output_float = (float *)memalign_alloc(64, sampsize);
     memset(audio_ctx_s.output_float, 0, sampsize);
-    audio_ctx_s._fifo = fifo_new(sampsize); // number of bytes
-    auto tmp = std::make_unique<uint8_t[]>(sampsize);
-    fifo_write(audio_ctx_s._fifo, tmp.get(), sampsize);
+    audio_ctx_s._fifo = fifo_new(out.size*2); // number of bytes
     SDL_PauseAudioDevice(audio_ctx_s.dev, 0);
     return true;
 }

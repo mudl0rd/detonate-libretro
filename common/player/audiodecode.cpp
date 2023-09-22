@@ -91,7 +91,7 @@ std::string auddecode_formats()
 auddecode *make_decoder(const char* filename)
 {
    auddecode *replay = NULL;
-   for(int i=0;auddecode_factory[i].init;++i)
+   for(int i=0;auddecode_factory[i].init != NULL;++i)
    {
    replay = auddecode_factory[i].init();
    const char *ext = get_filename_ext(filename);
