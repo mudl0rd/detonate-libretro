@@ -22,7 +22,7 @@ void freelib(void *handle);
 int getwindowdpi();
 std::string get_exename();
 void vector_appendbytes(std::vector<uint8_t> &vec, uint8_t *bytes, size_t len);
-std::vector<uint8_t> load_data(const char *path, unsigned *size);
+std::vector<uint8_t> load_data(const char *path);
 bool save_data(unsigned char *data, unsigned size, const char *path);
 uint32_t pow2up(uint32_t v);
 std::string base64_decode(const std::string &in);

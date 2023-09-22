@@ -80,7 +80,7 @@ std::string auddecode_formats()
 {
    std::ostringstream oss;
    char const* sep = "";
-   for (int i = 0; auddecode_factory[i].init; ++i) {
+   for (int i = 0; auddecode_factory[i].init != NULL; ++i) {
    std::unique_ptr<auddecode> replay(auddecode_factory[i].init());
     oss << sep << replay->file_types();
     sep = "|";
@@ -172,8 +172,6 @@ uint32_t music_getduration()
 {
    return duration;
 }
-
-#define BUFSIZE 1024
 void music_run()
 {
    if(replayer &&replayer->is_playing())

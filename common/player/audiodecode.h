@@ -77,6 +77,7 @@ auddecode *create_opus();
 auddecode *create_mpc();
 auddecode *create_wv();
 auddecode *create_modules();
+auddecode *create_m4a();
 typedef   auddecode* (*create_filetype)();
 static struct auddecode_factory_ {
    create_filetype  init; 
@@ -89,6 +90,7 @@ static struct auddecode_factory_ {
     create_mpc,
     create_wv,
     create_modules,
+    create_m4a,
     NULL
  };
 

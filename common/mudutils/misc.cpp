@@ -70,14 +70,13 @@ void vector_appendbytes(std::vector<uint8_t> &vec, uint8_t *bytes, size_t len)
 	vec.insert(vec.end(), bytes, bytes + len);
 }
 
-std::vector<uint8_t> load_data(const char *path, unsigned *size)
+std::vector<uint8_t> load_data(const char *path)
 {
 	std::ifstream input(path, std::ifstream::binary);
 	if (!input)
 		return {};
 	input.seekg(0, input.end);
 	unsigned Size = input.tellg();
-	*size = Size;
 	input.seekg(0, input.beg);
 	std::vector<uint8_t> Memory(Size, 0);
 	input.read((char *)&Memory[0], Size);

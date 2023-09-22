@@ -10,12 +10,13 @@ class auddecode_wav : public auddecode
 {
 private:
     bool isplaying2;
-    drwav       stream;
-    bool        repeat;
+    drwav stream;
+    bool repeat;
     bool isplaying;
+
 public:
-	~auddecode_wav() {
-      
+    ~auddecode_wav()
+    {
     }
 
     auddecode_wav()
@@ -23,19 +24,19 @@ public:
         isplaying2 = false;
     }
 
-	bool open(const char* filename ,float * samplerate, bool loop)
+    bool open(const char *filename, float *samplerate, bool loop)
     {
-        if (!drwav_init_file(&stream,filename,NULL)) {
-        return false;
+        if (!drwav_init_file(&stream, filename, NULL))
+        {
+            return false;
         }
         *samplerate = stream.sampleRate;
-         repeat = loop;
-         isplaying2=true;
+        repeat = loop;
+        isplaying2 = true;
         return true;
     }
 
-
-	virtual void seek(unsigned ms)
+    virtual void seek(unsigned ms)
     {
         drwav_uint64 index = ms;
         index *= stream.sampleRate;
@@ -45,10 +46,10 @@ public:
 
     void stop()
     {
-        if(isplaying2)
+        if (isplaying2)
         {
-         isplaying2=false;
-        drwav_uninit(&stream);
+            isplaying2 = false;
+            drwav_uninit(&stream);
         }
     }
 
@@ -57,48 +58,49 @@ public:
         return isplaying2;
     }
 
-    unsigned song_duration(){
+    unsigned song_duration()
+    {
         drwav_uint64 index;
-        drwav_get_length_in_pcm_frames(&stream,&index);
-        index *=1000ull;
+        drwav_get_length_in_pcm_frames(&stream, &index);
+        index *= 1000ull;
         index /= stream.sampleRate;
         return index;
     }
 
-    const char* song_title()
+    const char *song_title()
     {
         return NULL;
-
     }
 
-    const char* file_types(){
-         return "wav";
-    }
-
-
-	void mix( float *& buffer_samps, unsigned & count)
+    const char *file_types()
     {
-        float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = { 0 };
-        unsigned temp_samples=0;
-         if(isplaying2){
-     again:
-      temp_samples = (unsigned)drwav_read_pcm_frames_f32(&stream,NUM_FRAMES, temp_buffer);
-      if (temp_samples == 0)
-      {
-         if (repeat)
-         {
-            drwav_seek_to_pcm_frame(&stream,0);
-            goto again;
-         }
-         isplaying2=false;
-      }
-    
+        return "wav";
     }
-      buffer_samps = temp_buffer;
-      count = temp_samples;
+
+    void mix(float *&buffer_samps, unsigned &count)
+    {
+        float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = {0};
+        unsigned temp_samples = 0;
+        if (isplaying2)
+        {
+        again:
+            temp_samples = (unsigned)drwav_read_pcm_frames_f32(&stream, NUM_FRAMES, temp_buffer);
+            if (temp_samples == 0)
+            {
+                if (repeat)
+                {
+                    drwav_seek_to_pcm_frame(&stream, 0);
+                    goto again;
+                }
+                isplaying2 = false;
+            }
+        }
+        buffer_samps = temp_buffer;
+        count = temp_samples;
     }
 };
 
-auddecode *create_wav(){
+auddecode *create_wav()
+{
     return new auddecode_wav;
 }

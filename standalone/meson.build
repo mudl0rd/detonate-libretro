@@ -10,6 +10,7 @@ src = []
 #]*/
 srcdirs = [
     '../common/deps/imgui',
+    '../common/deps/decoder/m4a',
     '../common/mudutils',
     '../common/player',
     'src'
