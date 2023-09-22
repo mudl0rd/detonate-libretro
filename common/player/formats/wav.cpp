@@ -47,10 +47,9 @@ public:
     void stop()
     {
         if (isplaying2)
-        {
             isplaying2 = false;
+        if (&stream)
             drwav_uninit(&stream);
-        }
     }
 
     bool is_playing()

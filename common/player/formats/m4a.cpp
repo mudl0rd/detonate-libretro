@@ -31,7 +31,7 @@ private:
     float snglength;
     unsigned long srate;
     unsigned char nch;
-   uint8_t *m4a_ptr;
+    uint8_t *m4a_ptr;
     std::vector<uint8_t> m4a_data;
 
 public:
@@ -60,13 +60,14 @@ public:
         dec = aacDecoder_Open(TT_MP4_RAW, 1);
         UCHAR *dsi = (UCHAR *)demux.track[0].dsi;
         UINT dsi_size = demux.track[0].dsi_bytes;
-        if (AAC_DEC_OK != aacDecoder_ConfigRaw(dec, &dsi, &dsi_size))return false;
-        srate=demux.track[0].SampleDescription.audio.samplerate_hz;
-        nch=demux.track[0].SampleDescription.audio.channelcount;
-        m4a_ptr=m4a_data.data();
+        if (AAC_DEC_OK != aacDecoder_ConfigRaw(dec, &dsi, &dsi_size))
+            return false;
+        srate = demux.track[0].SampleDescription.audio.samplerate_hz;
+        nch = demux.track[0].SampleDescription.audio.channelcount;
+        m4a_ptr = m4a_data.data();
         double timescale_rcp = 1.0 / double(demux.track[0].timescale);
-        uint64_t duration =  (uint64_t)demux.track[0].duration_hi << 32 | demux.track[0].duration_lo;
-        snglength =  int(double(duration*timescale_rcp))*1000ull;
+        uint64_t duration = (uint64_t)demux.track[0].duration_hi << 32 | demux.track[0].duration_lo;
+        snglength = int(double(duration * timescale_rcp)) * 1000ull;
         *samplerate = srate;
         repeat = loop;
         isplaying2 = true;
@@ -77,18 +78,20 @@ public:
     {
         uint64_t index = ms;
         index *= srate;
-        index /= 1024;
-        sample_cnt = index;
+        index /= 1000;
+        int ats2 = (uint64_t)index*demux.track[0].timescale/srate;
+        unsigned frame_bytes, timestamp, duration;
+        sample_cnt=0;
+        while(timestamp < ats2)
+        MP4D_frame_offset(&demux, 0, sample_cnt++, &frame_bytes, &timestamp, &duration);
     }
 
     void stop()
     {
         if (isplaying2)
-        {
             isplaying2 = false;
-            aacDecoder_Close(dec);
-            MP4D_close(&demux);
-        }
+        aacDecoder_Close(dec);
+        MP4D_close(&demux);
     }
 
     bool is_playing()
@@ -122,36 +125,38 @@ public:
         {
             if (demux.track[0].handler_type == MP4D_HANDLER_TYPE_SOUN)
             {
-                again:
+            again:
                 if (sample_cnt < demux.track[0].sample_count)
                 {
-                    CStreamInfo* info;
+                    CStreamInfo *info;
                     unsigned frame_bytes, timestamp, duration;
                     MP4D_file_offset_t ofs = MP4D_frame_offset(&demux, 0, sample_cnt++, &frame_bytes, &timestamp, &duration);
                     UCHAR *frame = (UCHAR *)(m4a_ptr + ofs);
                     UINT frame_size = frame_bytes;
                     UINT valid = frame_size;
-                    AAC_DECODER_ERROR aac_err=aacDecoder_Fill(dec, &frame, &frame_size, &valid);
-                    if(aac_err != AAC_DEC_OK)
-                    goto bail;
-                    aac_err = aacDecoder_DecodeFrame(dec,temp_bufferint, sizeof(temp_bufferint), 0);
-                    if(aac_err != AAC_DEC_OK)
-                    goto bail;
+                    AAC_DECODER_ERROR aac_err = aacDecoder_Fill(dec, &frame, &frame_size, &valid);
+                    if (aac_err != AAC_DEC_OK)
+                        goto bail;
+                    aac_err = aacDecoder_DecodeFrame(dec, temp_bufferint, sizeof(temp_bufferint), 0);
+                    if (aac_err != AAC_DEC_OK)
+                        goto bail;
                     info = aacDecoder_GetStreamInfo(dec);
-                    if(info->frameSize)
+                    if (info->frameSize)
                     {
-                       conv2float(temp_buffer, (uint8_t *)temp_bufferint, NUM_FRAMES * 2, sampfmt::P16);
-                       temp_samples=info->frameSize;
-                    }    
-                 }
-                else{
-                if (repeat){
-                    sample_cnt=0;
-                    goto again;
+                        conv2float(temp_buffer, (uint8_t *)temp_bufferint, NUM_FRAMES * 2, sampfmt::P16);
+                        temp_samples = info->frameSize;
+                    }
                 }
+                else
+                {
+                    if (repeat)
+                    {
+                        sample_cnt = 0;
+                        goto again;
+                    }
                 bail:
-                isplaying2 = false;
-                 }
+                    isplaying2 = false;
+                }
             }
         }
         buffer_samps = temp_buffer;

@@ -47,11 +47,9 @@ public:
     void stop()
     {
         if (isplaying2)
-        {
             isplaying2 = false;
-            if (stream)
-                op_free(stream);
-        }
+        if (stream)
+            op_free(stream);
     }
 
     bool is_playing()

@@ -82,11 +82,9 @@ public:
     void stop()
     {
         if (isplaying2)
-        {
             isplaying2 = false;
-            if (wpc)
-                WavpackCloseFile(wpc);
-        }
+        if (wpc)
+            WavpackCloseFile(wpc);
     }
 
     bool is_playing()

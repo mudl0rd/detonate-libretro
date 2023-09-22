@@ -59,14 +59,12 @@ public:
     void stop()
     {
         if (isplaying2)
-        {
             isplaying2 = false;
-            if (demux)
-            {
-                mpc_demux_exit(demux);
-                mpc_reader_exit_stdio(&m_reader);
-                fclose(filez);
-            }
+        if (demux)
+        {
+            mpc_demux_exit(demux);
+            mpc_reader_exit_stdio(&m_reader);
+            fclose(filez);
         }
     }
 

@@ -40,11 +40,9 @@ public:
     void stop()
     {
         if (isplaying2)
-        {
             isplaying2 = false;
-            m4p_Close();
-            m4p_FreeSong();
-        }
+        m4p_Close();
+        m4p_FreeSong();
     }
 
     bool is_playing()

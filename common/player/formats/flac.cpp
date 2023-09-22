@@ -48,13 +48,11 @@ public:
     void stop()
     {
         if (isplaying2)
+        isplaying2 = false;
+        if (stream)
         {
-            isplaying2 = false;
-            if (stream)
-            {
-                drflac_free(stream, NULL);
-                stream = NULL;
-            }
+            drflac_free(stream, NULL);
+            stream = NULL;
         }
     }
 

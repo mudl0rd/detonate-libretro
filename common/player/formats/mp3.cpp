@@ -48,11 +48,9 @@ public:
     void stop()
     {
         if (isplaying2)
-        {
             isplaying2 = false;
-            if (&stream)
-                drmp3_uninit(&stream);
-        }
+        if (&stream)
+            drmp3_uninit(&stream);
     }
 
     bool is_playing()
