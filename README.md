@@ -8,8 +8,7 @@
 * **GCC/G++ with C++17 support**
 
 ## With?
-
-* MP3/FLAC/WAV/Vorbis/Opus/Musepack/WavPack decoding
+* MP3/FLAC/WAV/Vorbis/Opus/Musepack/WavPack/AAC decoding
 * Tracker module (XM/S3M/IT/MOD) playback
 * Sample accurate seeking
 * dear-imgui based file browser
