@@ -193,10 +193,16 @@ if (ImGui::BeginMenuBar())
         std::string posstring_dr = format_duration(std::chrono::milliseconds(music_getduration()));
         posstring += " / ";
         posstring += posstring_dr;
+        static int tooseek=0;
         if(ImGui::SliderInt("Song position", &pos, 0,music_getduration(),posstring.c_str()) && ImGui::IsItemEdited())
-        toseekto=pos;
+        {
+            std::string tt = format_duration(std::chrono::milliseconds(pos));
+            tooseek=pos;
+            ImGui::SetTooltip(tt.c_str());
+        }
+
        if(ImGui::IsItemDeactivatedAfterEdit())
-        music_setposition(toseekto);
+        music_setposition(tooseek);
       }
      
        
