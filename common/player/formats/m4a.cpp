@@ -76,14 +76,14 @@ public:
 
     virtual void seek(unsigned ms)
     {
-        uint64_t index = ms;
-        index *= srate;
-        index /= 1000;
-        int ats2 = (uint64_t)index*demux.track[0].timescale/srate;
-        unsigned frame_bytes, timestamp, duration;
-        sample_cnt=0;
-        while(timestamp < ats2)
-        MP4D_frame_offset(&demux, 0, sample_cnt++, &frame_bytes, &timestamp, &duration);
+        unsigned frame_bytes=0, timestamp=0, duration=0;
+        unsigned int dur_total=0;
+        sample_cnt = 0;
+        while(dur_total < ms)
+        {
+            MP4D_frame_offset(&demux, 0, sample_cnt++, &frame_bytes, &timestamp, &duration);
+            dur_total+=uint32_t((1000ull *(duration)) / srate);
+        }
     }
 
     void stop()
