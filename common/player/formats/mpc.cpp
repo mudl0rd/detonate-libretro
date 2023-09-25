@@ -86,9 +86,10 @@ public:
         return NULL;
     }
 
-    const char *file_types()
+   std::vector <std::string> file_types()
     {
-        return "mpc";
+        std::vector<std::string>  a3 = { "mpc","mpp" };
+        return a3;
     }
 
     void mix(float *&buffer_samps, unsigned &count)

@@ -82,8 +82,10 @@ std::string auddecode_formats()
    char const* sep = "";
    for (int i = 0; auddecode_factory[i].init != NULL; ++i) {
    std::unique_ptr<auddecode> replay(auddecode_factory[i].init());
-    oss << sep << replay->file_types();
+    for (const auto& ext : replay->file_types()){
+    oss << sep << ext;
     sep = "|";
+    }
    }
    return oss.str();
 }
@@ -95,7 +97,9 @@ auddecode *make_decoder(const char* filename)
    {
    replay = auddecode_factory[i].init();
    const char *ext = get_filename_ext(filename);
-   if(strcmp(ext,replay->file_types())==0){
+
+   for (const auto& ext2 : replay->file_types()){
+   if(strcmp(ext2.c_str(),ext)==0){
    if(!replay->open(filename,&srate,false)){
    delete replay;
    replay=NULL;
@@ -103,6 +107,8 @@ auddecode *make_decoder(const char* filename)
    else
    return replay;
    }
+   }
+
    }
 }
 

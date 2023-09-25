@@ -115,7 +115,8 @@
 			"xutility": "cpp",
 			"coroutine": "cpp",
 			"huffman.h": "c",
-			"m4p.h": "c"
+			"m4p.h": "c",
+			"*.rh": "cpp"
 		}
 	}
 }

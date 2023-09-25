@@ -60,11 +60,11 @@ public:
         return NULL;
     }
 
-    const char *file_types()
+    std::vector<std::string> file_types()
     {
-        return "xm";
+        std::vector<std::string> a3 = { "mod","s3m","xm","it" };
+        return a3;
     }
-
     void mix(float *&buffer_samps, unsigned &count)
     {
         float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = {0};

@@ -37,21 +37,20 @@ private:
 public:
     ~auddecode_m4a()
     {
-        demux = {
-            0,
-        };
+        
     }
 
     auddecode_m4a()
+    {
+       
+    }
+
+    bool open(const char *filename, float *samplerate, bool loop)
     {
         isplaying2 = false;
         demux = {
             0,
         };
-    }
-
-    bool open(const char *filename, float *samplerate, bool loop)
-    {
         m4a_data = load_data(filename);
         INPUT_BUFFER buf = {m4a_data.data(), m4a_data.size()};
         if (!MP4D_open(&demux, read_callback, &buf, m4a_data.size()))
@@ -86,6 +85,9 @@ public:
             isplaying2 = false;
         aacDecoder_Close(dec);
         MP4D_close(&demux);
+        demux = {
+            0,
+        };
     }
 
     bool is_playing()
@@ -104,9 +106,10 @@ public:
         return NULL;
     }
 
-    const char *file_types()
+    std::vector<std::string> file_types()
     {
-        return "m4a";
+        std::vector<std::string> a3 = { "m4a" };
+        return a3;
     }
 
     void mix(float *&buffer_samps, unsigned &count)
