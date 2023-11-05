@@ -163,6 +163,13 @@ void resampler_sinc_process(void *re_, struct resampler_data *data)
 {
 	size_t out_frames = 0;
 	rarch_sinc_resampler_t *resamp = (rarch_sinc_resampler_t*)re_;
+
+	if (data->ratio == 1.0)
+	{
+		memcpy(data->data_out,data->data_in,data->input_frames*2*sizeof(float));
+		data->output_frames = data->input_frames;
+		return;
+	}
 	uint32_t ratio = PHASES / data->ratio;
 	const float *input = data->data_in;
 	float *output = data->data_out;
