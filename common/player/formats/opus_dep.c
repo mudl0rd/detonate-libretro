@@ -94,7 +94,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //#define opus_custom_encoder_get_size opus_custom_encoder_get_size_alt
 #include "opus/celt/celt_decoder.c"
-#include "opus/celt/celt_encoder.c"
 
 /////////////////
 // SILK Common //
@@ -142,13 +141,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "opus/silk/decode_pitch.c"
 #include "opus/silk/decode_pulses.c"
 #include "opus/silk/dec_API.c"
-#include "opus/silk/encode_indices.c"
-#include "opus/silk/encode_pulses.c"
-#include "opus/silk/enc_API.c"
 #include "opus/silk/gain_quant.c"
 #include "opus/silk/HP_variable_cutoff.c"
 #include "opus/silk/init_decoder.c"
-#include "opus/silk/init_encoder.c"
 #include "opus/silk/inner_prod_aligned.c"
 #include "opus/silk/interpolate.c"
 #include "opus/silk/lin2log.c"
@@ -159,7 +154,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "opus/silk/NLSF2A.c"
 #include "opus/silk/NLSF_decode.c"
 #include "opus/silk/NLSF_del_dec_quant.c"
-#include "opus/silk/NLSF_encode.c"
 #include "opus/silk/NLSF_stabilize.c"
 #include "opus/silk/NLSF_unpack.c"
 #include "opus/silk/NLSF_VQ.c"
@@ -168,7 +162,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "opus/silk/NSQ_del_dec.c"
 #include "opus/silk/pitch_est_tables.c"
 #include "opus/silk/PLC.c"
-#include "opus/silk/process_NLSFs.c"
 #include "opus/silk/quant_LTP_gains.c"
 #include "opus/silk/resampler.c"
 #include "opus/silk/resampler_down2.c"
@@ -182,7 +175,6 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "opus/silk/sigm_Q15.c"
 #include "opus/silk/sort.c"
 #include "opus/silk/stereo_decode_pred.c"
-#include "opus/silk/stereo_encode_pred.c"
 #include "opus/silk/stereo_find_predictor.c"
 #include "opus/silk/stereo_LR_to_MS.c"
 #include "opus/silk/stereo_MS_to_LR.c"
@@ -212,12 +204,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "opus/silk/burg_modified_FLP.c"
 #include "opus/silk/bwexpander_FLP.c"
 #include "opus/silk/corrMatrix_FLP.c"
-#include "opus/silk/encode_frame_FLP.c"
 #include "opus/silk/energy_FLP.c"
-#include "opus/silk/find_LPC_FLP.c"
 #include "opus/silk/find_LTP_FLP.c"
 #include "opus/silk/find_pitch_lags_FLP.c"
-#include "opus/silk/find_pred_coefs_FLP.c"
 #include "opus/silk/inner_product_FLP.c"
 #include "opus/silk/k2a_FLP.c"
 #include "opus/silk/levinsondurbin_FLP.c"
@@ -245,10 +234,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "opus/libopus/opus.c"
 #include "opus/libopus/opus_decoder.c"
-#include "opus/libopus/opus_encoder.c"
 #include "opus/libopus/opus_multistream.c"
 #include "opus/libopus/opus_multistream_decoder.c"
-#include "opus/libopus/opus_multistream_encoder.c"
 #include "opus/libopus/repacketizer.c"
 
 #include "opus/libopus/analysis.c"
