@@ -8,9 +8,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../it_music.h"
-#include "../it_structs.h"
-#include "../it_d_rm.h"
+#include "it_music.h"
+#include "it_structs.h"
+#include "it_d_rm.h"
+#include "s3m.h"
 
 #define S3M_ROWS 64
 

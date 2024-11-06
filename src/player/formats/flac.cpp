@@ -1,6 +1,6 @@
 #include "../audiodecode.h"
 #define DR_FLAC_IMPLEMENTATION
-#include <dr/dr_flac.h>
+#include <dr_flac.h>
 #include <stdint.h>
 #include <stdbool.h>
 

@@ -29,6 +29,9 @@
 # include "config.h"
 #endif
 
+#define USE_ALLOCA 
+#define OPUS_BUILD 
+
 #ifndef OPUS_BUILD
 # error "OPUS_BUILD _MUST_ be defined to build Opus. This probably means you need other defines as well, as in a config.h. See the included build files for details."
 #endif

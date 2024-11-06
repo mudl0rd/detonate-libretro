@@ -1,5 +1,5 @@
 #define DR_WAV_IMPLEMENTATION
-#include <dr/dr_wav.h>
+#include <dr_wav.h>
 #include "audiodecode.h"
 #include <stdint.h>
 #include <stdbool.h>

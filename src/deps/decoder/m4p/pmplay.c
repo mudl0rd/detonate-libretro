@@ -16,6 +16,7 @@
 #include "pmp_mix.h"
 #include "snd_masm.h"
 #include "ft_tables.h"
+#include "it_d_rm.h"
 
 #define INSTR_HEADER_SIZE 263
 

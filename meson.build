@@ -12,11 +12,10 @@ src += [
 
 
 srcdirs = [
-    '../common/deps/imgui',
-    '../common/mudutils',
-    '../common',
-    '../common/formats',
-    '../common/deps/ibxm'
+    'src/deps/imgui',
+    'src/mudutils',
+    'src/player',
+    'src/player/formats',
 ]
 
 foreach srcitem : srcdirs
@@ -26,14 +25,23 @@ endforeach
 
 inc = [
   include_directories(
-    '../../common/deps/imgui',
-    '../../common/deps',
-    '../../common/deps/dr',
-    '../../common',
-    '../../common/mudutils',
-    '../../common/formats',
-    '../../common/deps/stb',
-    '../../common/deps/ibxm',
+    'src/deps/imgui',
+    'src/deps',
+    'src/deps/decoder',
+    'src/deps/decoder/m4p',
+    'src/deps/decoder/m4p',
+    'src/deps/decoder/musepack',
+    'src/deps/decoder/opus',
+    'src/deps/decoder/opus/celt',
+    'src/deps/decoder/opus/libopus',
+    'src/deps/decoder/opus/opusfile',
+    'src/deps/decoder/opus/silk',
+    'src/deps/decoder/wavpack',
+    'src',
+    'src/mudutils',
+    'src/player/formats',
+    'src/player',
+    'src/deps/stb',
     'src/glsym'
   )
 ]
@@ -45,6 +53,7 @@ else
 endif
 
 sdl2dep = dependency('gl')
+fdkaac_dep = dependency('fdk-aac', required : true,static:true)
 
 test_ldflags = []
 common_ldflags = meson.get_compiler('cpp').get_supported_link_arguments (
@@ -63,6 +72,6 @@ common_ldflags,
 language: [ 'c', 'cpp' ],)
 dir_base = meson.current_source_dir()
 dir_install = join_paths(dir_base, 'compile_dir')
-shared_library('detonate-libretro',install: true,install_dir: dir_install,include_directories : [inc],sources : [src],dependencies : [dl_dep,sdl2dep], cpp_args: '-DLIBRETRO'
+shared_library('detonate-libretro',install: true,install_dir: dir_install,include_directories : [inc],sources : [src],dependencies : [fdkaac_dep,dl_dep,sdl2dep], cpp_args: '-DLIBRETRO'
 )
 

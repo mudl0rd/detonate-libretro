@@ -113,7 +113,10 @@
 			"xstring": "cpp",
 			"xtr1common": "cpp",
 			"xtree": "cpp",
-			"xutility": "cpp"
+			"xutility": "cpp",
+			"it_music.h": "c",
+			"sb16_m.h": "c",
+			"it_structs.h": "c"
 		}
 	}
 }

@@ -1,7 +1,7 @@
 #include "../audiodecode.h"
 #define DR_MP3_IMPLEMENTATION
 #define DR_MP3_FLOAT_OUTPUT
-#include <dr/dr_mp3.h>
+#include <dr_mp3.h>
 #include <stdint.h>
 #include <stdbool.h>
 

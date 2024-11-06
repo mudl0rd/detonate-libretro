@@ -35,6 +35,8 @@
 #include "opus_types.h"
 #include "opus_defines.h"
 
+#define USE_ALLOCA
+
 #if (!defined (VAR_ARRAYS) && !defined (USE_ALLOCA) && !defined (NONTHREADSAFE_PSEUDOSTACK))
 #error "Opus requires one of VAR_ARRAYS, USE_ALLOCA, or NONTHREADSAFE_PSEUDOSTACK be defined to select the temporary allocation mode."
 #endif

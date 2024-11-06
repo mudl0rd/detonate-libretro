@@ -1,4 +1,7 @@
 #include "audiodecode.h"
+#define USE_ALLOCA 1
+#define OPUS_BUILD 1
+
 #include "opus/opusfile/opusfile.h"
 
 #define NUM_FRAMES 1024
