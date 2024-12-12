@@ -45,8 +45,8 @@ retro_keyboard_callback kb_cb;
 #endif
 #define BASE_WIDTH 1280
 #define BASE_HEIGHT 720
-#define MAX_WIDTH 2048
-#define MAX_HEIGHT 2048
+#define MAX_WIDTH 1280
+#define MAX_HEIGHT 720
 static unsigned width  = BASE_WIDTH;
 static unsigned height = BASE_HEIGHT;
 
@@ -205,7 +205,6 @@ extern void menus_run();
 EXPORT void retro_run(void)
 {
    poller_cb();
-
    ImGuiIO &io = ImGui::GetIO();
    const float X_FACTOR = ((float)width / 65536.0f);
    const float Y_FACTOR = ((float)height / 65536.0f);
@@ -228,7 +227,7 @@ EXPORT void retro_run(void)
    glScissor(0, 0, (GLsizei)io.DisplaySize.x, (GLsizei)io.DisplaySize.y);
    menus_run();
     
-    glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound, but prefer using the GL3+ code.
+   
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
    video_cb(RETRO_HW_FRAME_BUFFER_VALID, width, height, 0);
 

@@ -268,7 +268,7 @@ void    ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data)
 
     // Desktop OpenGL 3.0 and OpenGL 3.1 had separate polygon draw modes for front-facing and back-facing faces of polygons
     glPolygonMode(GL_FRONT_AND_BACK, (GLenum)last_polygon_mode[0]);
-
+    glUseProgram(0); // You may want this if using this code in an OpenGL 3+ context where shaders may be bound, but prefer using the GL3+ code.
     glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
     glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
     (void)bd; // Not all compilation paths use this
@@ -548,7 +548,7 @@ void ImGui_ImpLibretro_ProcessKeys(bool down, unsigned keycode,
 }
 
 
-void ImGui_ImplLibretro_ProcessMouse(int mouse_button, bool pressed, int x, int y)
+void ImGui_ImplLibretro_ProcessMouse(int mouse_button, bool pressed, float x,float y)
 {
     ImGuiIO& io = ImGui::GetIO();
     io.AddMousePosEvent((float)x, (float)y);
@@ -582,12 +582,7 @@ void ImGui_ImplLibretro_NewFrame()
 {
     // Setup time step
     ImGuiIO& io = ImGui::GetIO();
-    int current_time = time(0);
-    int delta_time_ms = (current_time - g_Time);
-    if (delta_time_ms <= 0)
-        delta_time_ms = 1;
-    io.DeltaTime = delta_time_ms / 1000.0f;
-    g_Time = current_time;
+    io.DeltaTime = 1/60.;
 }
 /*
 static void ImGui_ImplLibretro_UpdateKeyModifiers()

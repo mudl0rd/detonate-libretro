@@ -6,7 +6,7 @@
 
 void ImGui_ImpLibretro_ProcessKeys(bool down, unsigned keycode,
       uint32_t character, uint16_t key_modifiers);
-void ImGui_ImplLibretro_ProcessMouse(int mouse_button, bool pressed, int x, int y);
+void ImGui_ImplLibretro_ProcessMouse(int mouse_button, bool pressed,float x,float y);
 void ImGui_ImplLibretro_ProcessMW(float mousewh);
 bool ImGui_ImplLibretro_Init();
 void ImGui_ImplLibretro_Shutdown();

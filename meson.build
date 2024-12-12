@@ -72,6 +72,7 @@ common_ldflags,
 language: [ 'c', 'cpp' ],)
 dir_base = meson.current_source_dir()
 dir_install = join_paths(dir_base, 'compile_dir')
-shared_library('detonate-libretro',install: true,install_dir: dir_install,include_directories : [inc],sources : [src],dependencies : [fdkaac_dep,dl_dep,sdl2dep], cpp_args: '-DLIBRETRO'
+shared_library('detonate-libretro',name_prefix: '',install: true,install_dir: dir_install,include_directories : [inc],sources : [src],
+dependencies : [fdkaac_dep,dl_dep,sdl2dep], cpp_args: '-DLIBRETRO'
 )
 
