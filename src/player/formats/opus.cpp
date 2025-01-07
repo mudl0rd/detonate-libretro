@@ -4,15 +4,13 @@
 
 #include "opus/opusfile/opusfile.h"
 
-#define NUM_FRAMES 1024
-
 class auddecode_opus : public auddecode
 {
 private:
     bool isplaying2;
     OggOpusFile *stream;
     bool repeat;
-
+    int num_frames;
 public:
     ~auddecode_opus()
     {
@@ -79,12 +77,12 @@ public:
 
     void mix(float *&buffer_samps, unsigned &count)
     {
-        float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = {0};
+        float temp_buffer[count * 4 * sizeof(float)] = {0};
         unsigned temp_samples = 0;
         if (isplaying2)
         {
         again:
-            temp_samples = op_read_float(stream, temp_buffer, NUM_FRAMES * 2, NULL);
+            temp_samples = op_read_float(stream, temp_buffer, count * 2, NULL);
             if (temp_samples == 0)
             {
                 if (repeat)

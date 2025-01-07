@@ -3,8 +3,6 @@
 #include "musepack/reader.h"
 #include "musepack/internal.h"
 
-#define NUM_FRAMES 1024
-
 class auddecode_mpc : public auddecode
 {
 
@@ -15,7 +13,6 @@ private:
     FILE *filez;
     bool repeat;
     int sample_r;
-
 public:
     ~auddecode_mpc()
     {
@@ -94,7 +91,7 @@ public:
 
     void mix(float *&buffer_samps, unsigned &count)
     {
-        float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = {0};
+        float temp_buffer[count * 4 * sizeof(float)] = {0};
         unsigned temp_samples = 0;
         if (isplaying2)
         {

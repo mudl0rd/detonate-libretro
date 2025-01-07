@@ -1,7 +1,6 @@
 #include "audiodecode.h"
 #include "stb_vorbis.h"
 
-#define NUM_FRAMES 1024
 
 class auddecode_vorbis : public auddecode
 {
@@ -9,7 +8,6 @@ private:
     bool isplaying2;
     stb_vorbis *stream;
     bool repeat;
-
 public:
     ~auddecode_vorbis()
     {
@@ -74,12 +72,12 @@ public:
 
     void mix(float *&buffer_samps, unsigned &count)
     {
-        float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = {0};
+        float temp_buffer[count * 4 * sizeof(float)] = {0};
         unsigned temp_samples = 0;
         if (isplaying2)
         {
         again:
-            temp_samples = stb_vorbis_get_samples_float_interleaved(stream, 2, temp_buffer, NUM_FRAMES * 2);
+            temp_samples = stb_vorbis_get_samples_float_interleaved(stream, 2, temp_buffer, count * 2);
             if (temp_samples == 0)
             {
                 if (repeat)

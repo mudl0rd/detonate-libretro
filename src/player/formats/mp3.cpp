@@ -5,15 +5,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define NUM_FRAMES 1024
-
 class auddecode_mp3 : public auddecode
 {
 private:
     bool isplaying2;
     drmp3 stream;
     bool repeat;
-
+    int num_frames;
 public:
     ~auddecode_mp3()
     {
@@ -78,12 +76,12 @@ public:
 
     void mix(float *&buffer_samps, unsigned &count)
     {
-        float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = {0};
+        float temp_buffer[count * 4 * sizeof(float)] = {0};
         unsigned temp_samples = 0;
         if (isplaying2)
         {
         again:
-            temp_samples = (unsigned)drmp3_read_pcm_frames_f32(&stream, NUM_FRAMES, temp_buffer);
+            temp_samples = (unsigned)drmp3_read_pcm_frames_f32(&stream, count, temp_buffer);
             if (temp_samples == 0)
             {
                 if (repeat)

@@ -1,7 +1,6 @@
 #include "audiodecode.h"
 #include "wavpack/wavpack.h"
 
-#define NUM_FRAMES 1024
 
 class auddecode_wv : public auddecode
 {
@@ -112,19 +111,19 @@ public:
 
     void mix(float *&buffer_samps, unsigned &count)
     {
-        float temp_buffer[NUM_FRAMES * 4 * sizeof(float)] = {0};
-        int32_t temp_bufferint[NUM_FRAMES * 4 * sizeof(int32_t)] = {0};
+        float temp_buffer[count * 4 * sizeof(float)] = {0};
+        int32_t temp_bufferint[count * 4 * sizeof(int32_t)] = {0};
         unsigned temp_samples = 0;
         if (isplaying2)
         {
         again:
             int mode = WavpackGetMode(wpc);
             if (MODE_FLOAT & mode)
-                temp_samples = WavpackUnpackSamples(wpc, reinterpret_cast<int32_t *>(&temp_buffer[0]), NUM_FRAMES);
+                temp_samples = WavpackUnpackSamples(wpc, reinterpret_cast<int32_t *>(&temp_buffer[0]), count);
             else
             {
-                temp_samples = WavpackUnpackSamples(wpc, temp_bufferint, NUM_FRAMES);
-                convintfloatwv(temp_buffer, temp_bufferint, NUM_FRAMES * 2, bits);
+                temp_samples = WavpackUnpackSamples(wpc, temp_bufferint, count);
+                convintfloatwv(temp_buffer, temp_bufferint, count * 2, bits);
             }
             if (temp_samples == 0)
             {
