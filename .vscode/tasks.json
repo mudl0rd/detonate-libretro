@@ -2,12 +2,26 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			
 			"windows": {
 				"command": "C:\\msys64\\usr\\bin\\bash.exe",
-				"args": ["-lc", "rm -r builddir &&([ -f builddir/build.ninja ] || CC=gcc CXX=g++ meson setup builddir && meson builddir && cd builddir && meson install) && ninja -C builddir | cat"]
+				"args": [
+					"--login", "-i",
+					"./cli_build.sh"
+				],
+				"options": {
+					"env": {
+						"PATH": "C:\\msys64\\usr\\bin;C:\\msys64\\mingw64\\bin",
+						"MSYSTEM": "MINGW64",
+						"CHERE_INVOKING": "1",
+						"MSYS2_PATH_TYPE": "inherit"
+					},
+				},
 			},
 			"linux": {
-				"args": ["-lc", "cd \"\"${workspaceRoot}\"\" && rm -r builddir && ([ -f builddir/build.ninja ] || meson builddir) && ninja -C builddir && cd builddir && meson install && $@"],
+				"args": [
+					"./cli_build.sh"
+				],
 				"command": "/bin/bash"
 			},
 			"options": {
@@ -40,12 +54,26 @@
 			}
 		},
 		{
+			
 			"windows": {
 				"command": "C:\\msys64\\usr\\bin\\bash.exe",
-				"args": ["-lc", "rm -r builddir &&([ -f builddir/build.ninja ] || CC=gcc CXX=g++ windowing_type=sdlguionly meson setup builddir && meson builddir && cd builddir && meson install) && ninja -C builddir | cat"]
+				"args": [
+					"--login", "-i",
+					"./cli_build.sh"
+				],
+				"options": {
+					"env": {
+						"PATH": "C:\\msys64\\usr\\bin;C:\\msys64\\mingw64\\bin",
+						"MSYSTEM": "MINGW64",
+						"CHERE_INVOKING": "1",
+						"MSYS2_PATH_TYPE": "inherit"
+					},
+				},
 			},
 			"linux": {
-				"args": ["-lc", "cd \"\"${workspaceRoot}\"\" && rm -r builddir && ([ -f builddir/build.ninja ] || meson builddir) && ninja -C builddir && cd builddir && meson install && $@"],
+				"args": [
+					"./cli_build.sh"
+				],
 				"command": "/bin/bash"
 			},
 			"options": {

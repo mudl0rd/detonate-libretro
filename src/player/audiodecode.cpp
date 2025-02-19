@@ -111,7 +111,6 @@ auddecode *make_decoder(const char *filename)
    }
 }
 
-#ifdef LIBRETRO
 void convert_float_to_s16(int16_t *out,
                           const float *in, size_t samples)
 {
@@ -122,7 +121,6 @@ void convert_float_to_s16(int16_t *out,
       out[i] = (val > 0x7FFF) ? 0x7FFF : (val < -0x8000 ? -0x8000 : (int16_t)val);
    }
 }
-#endif
 
 bool music_isplaying()
 {
@@ -175,7 +173,6 @@ void music_run()
       float *samples2 = NULL;
       unsigned count = srate / 60;
       replayer->mix(samples2, count);
-      sample_count += count;
       extern retro_audio_sample_batch_t audio_batch_cb;
       if (srate != 44100)
       {
@@ -194,6 +191,7 @@ void music_run()
          resampler_sinc_process(resample, &src_data);
          convert_float_to_s16(int_ptr, out_ptr, src_data.output_frames * 2);
          audio_batch_cb(int_ptr, src_data.output_frames);
+         sample_count += src_data.output_frames;
       }
       else
       {
@@ -201,6 +199,7 @@ void music_run()
          int16_t *int_ptr = samples_int.get();
          convert_float_to_s16(int_ptr, samples2, count * 2);
          audio_batch_cb(int_ptr, count);
+          sample_count += count;
       }
    }
 }
