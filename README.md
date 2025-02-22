@@ -2,7 +2,8 @@
 
 **Personal** [libretro](https://www.libretro.com) based audio player
 
-![Screenshot 2024-11-07 075115](https://github.com/user-attachments/assets/5e42f8ea-96b1-421f-9eb7-60f8e9aeac10)
+![Screenshot 2025-02-23 092330](https://github.com/user-attachments/assets/00ba0303-b477-49df-b5ae-1f89113c6ece)
+
 
 * **x86 CPUs w/SSE4.1 and above, potentially NEON**.
 * **OGL 3.3/GLES2 and above, subject to change**
