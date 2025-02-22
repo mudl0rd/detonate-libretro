@@ -19,7 +19,7 @@
 
 ## How?
 
-* SDL2 (for standalone version)
+* libretro
 * dear-imgui
 * Meson
 * MSYS2 on Windows
