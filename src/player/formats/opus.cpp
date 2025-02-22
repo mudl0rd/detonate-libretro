@@ -2,7 +2,7 @@
 #define USE_ALLOCA 1
 #define OPUS_BUILD 1
 
-#include "opus/opusfile/opusfile.h"
+#include <opus/opusfile.h>
 
 class auddecode_opus : public auddecode
 {

@@ -93,7 +93,7 @@ static struct auddecode_factory_ {
     create_mpc,
     create_wv,
     create_modules,
-    create_m4a
+    create_m4a,
     NULL
  };
 

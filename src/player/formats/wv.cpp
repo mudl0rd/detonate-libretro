@@ -1,5 +1,5 @@
 #include "audiodecode.h"
-#include "wavpack/wavpack.h"
+#include <wavpack/wavpack.h>
 
 
 class auddecode_wv : public auddecode
