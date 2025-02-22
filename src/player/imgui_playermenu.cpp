@@ -391,8 +391,7 @@ void menus_run()
 
     ImGui::SetNextWindowSize(ImVec2(winsize));
     ImGui::SetNextWindowPos(ImVec2(0.5f, ypos));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-    ImGui::BeginChild("rombrowser", ImVec2(winsize), false,
+    ImGui::BeginChild("rombrowser", ImVec2(winsize), true,
                       ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_HorizontalScrollbar);
 
     float panelHeight = ImGui::GetContentRegionAvail().y;
@@ -445,7 +444,6 @@ void menus_run()
         }
     }
     ImGui::EndChild();
-    ImGui::PopStyleVar();
     ImGui::End();
     // Rendering
     ImGui::Render();
